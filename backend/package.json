@@ -1,0 +1,16 @@
+{
+  "name": "studyprio-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "migrate": "node src/scripts/migrate.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
+  }
+}
