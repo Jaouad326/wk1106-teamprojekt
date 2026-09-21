@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { getDbConnection } from './config/db.js';
+import { createCommentRouter } from './modules/comments/commentRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -8,32 +9,39 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// API-Vertrag: Health-Check
+// --- TEMPORÄRE TEST-HELFER ---
+const mockRequireAuth = (req, res, next) => {
+  req.user = { id: 'test-user-1', email: 'test@thm.de' };
+  next();
+};
+const mockAccessService = {
+  canReadTask: (userId, taskId) => true,
+  canWriteTask: (userId, taskId) => true
+};
+// -----------------------------
+
 app.get('/api/health', async (req, res) => {
   try {
-    // Teste DB-Verbindung
     const db = await getDbConnection();
     await db.get('SELECT 1');
     await db.close();
-
-    res.status(200).json({
-      data: {
-        status: 'ok',
-        database: 'connected',
-        timestamp: new Date().toISOString()
-      }
-    });
+    res.status(200).json({ data: { status: 'ok', database: 'connected' } });
   } catch (error) {
-    res.status(500).json({
-      error: {
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'System health check failed',
-        details: error.message
-      }
-    });
+    res.status(500).json({ error: { code: 'INTERNAL_SERVER_ERROR', message: 'System health check failed' } });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Backend läuft auf http://localhost:${PORT}`);
+// Verbinden uns mit der Datenbank und starten dann den Server
+getDbConnection().then(db => {
+  // Wir übergeben der Fabrik unsere Datenbank und die Test-Helfer
+  const commentRouter = createCommentRouter(db, mockRequireAuth, mockAccessService);
+  
+  // Schalten die Route scharf. Die URL sieht dann z.B. so aus: /api/tasks/123/comments
+  app.use('/api/tasks/:taskId/comments', commentRouter);
+  
+  app.listen(PORT, () => {
+    console.log(`Backend läuft auf http://localhost:${PORT}`);
+  });
+}).catch(err => {
+  console.error('Konnte Datenbank nicht verbinden:', err);
 });

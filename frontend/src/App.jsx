@@ -1,32 +1,20 @@
-// frontend/src/App.jsx
-import { useState, useEffect } from 'react'
+import CommentSection from './features/comments/CommentSection.jsx';
 
 function App() {
-  const [health, setHealth] = useState(null)
-
-  useEffect(() => {
-    fetch('/api/health')
-      .then(res => res.json())
-      .then(json => setHealth(json.data))
-      .catch(err => console.error(err))
-  }, [])
-
   return (
-    <div style={{ fontFamily: 'sans-serif', padding: '2rem' }}>
-      <h1>StudyPrio - Minimal Setup</h1>
-      <p>Frontend: React + Vite läuft.</p>
-      <div>
-        <h2>Backend Status:</h2>
-        {health ? (
-          <pre style={{ background: '#f4f4f4', padding: '1rem' }}>
-            {JSON.stringify(health, null, 2)}
-          </pre>
-        ) : (
-          <p>Lade API-Status...</p>
-        )}
+    <div style={{ fontFamily: 'sans-serif', padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
+      <h1>StudyPrio - Vorschau</h1>
+      
+      <div style={{ background: '#e3f2fd', padding: '20px', borderRadius: '8px' }}>
+        <h2>Aufgabe: Präsentation vorbereiten</h2>
+        <p><strong>Beschreibung:</strong> Das ist ein Platzhalter für Amins Aufgabendetails. Hier steht später, was genau zu tun ist.</p>
+        <p><strong>Fälligkeit:</strong> 25.09.2026</p>
       </div>
+      
+      {/* Hier wird dein programmierter Baustein eingebunden! */}
+      <CommentSection taskId="test-task-1" />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
