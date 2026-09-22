@@ -6,7 +6,10 @@
     "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "cd backend && npm run dev",
-    "dev:frontend": "cd frontend && npm run dev"
+    "dev:frontend": "cd frontend && npm run dev",
+    "test:team": "cd backend && node tests/integration/run.mjs --test",
+    "demo:team": "cd backend && node tests/integration/run.mjs",
+    "check:auth": "npm --prefix backend test && npm --prefix frontend run build"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
