@@ -1,57 +1,73 @@
-# Auth-Baustein – erste Teillieferung
+# Architektur des Anmeldebereichs
 
-Stand 22.09.2026. Ergänzung zur späteren Gesamtarchitektur, kein Ersatz für arc42.
+Stand: 23.09.2026. Beitrag zur Gesamtarchitektur (arc42 A05/A06/A08).
 
-## Bausteine und Laufzeit (A05/A06)
+## Aufteilung
+- authService: E-Mail prüfen, Link erzeugen und bestätigen.
+- authRepository: SQLite-Zugriffe, Transaktionen, Sitzungen und Ratenlimits.
+- sessionService: Sitzungstoken und Cookie.
+- authRoutes: HTTP-Endpunkte, requireAuth und Schutz schreibender Anfragen.
+- mailer: lokaler Testadapter oder Nodemailer mit SMTP/TLS.
+- authConfig: Einstellungen aus der Umgebung prüfen.
+- app.js: Bausteine verbinden; server.js: Server starten und alte Daten bereinigen.
+- AuthGate: Loginformular, explizite Bestätigung, Sitzungsprüfung und Logout.
 
-`authService.js` prüft die Eingabe, erzeugt einen Zufallstoken und orchestriert
-Repository/Mailer. `authRepository.js` übernimmt SQLite-Persistenz und die atomare
-Tokenverwendung/Kontoanlage. `authMigration.js` erstellt ausschließlich Auth-Tabellen.
-`authError.js` enthält sichere fachliche Fehler mit Code und geplantem HTTP-Status.
+## Ablauf und Datenbank
+Jeder Repository-Aufruf öffnet eine eigene Verbindung und schließt sie wieder.
+Bei Bestätigung: BEGIN IMMEDIATE, gültigen Link verbrauchen, Konto finden/anlegen,
+neue Sitzung speichern und ggf. die bisherige Browsersitzung löschen, COMMIT.
+Bei Fehler: ROLLBACK. So gibt es weder doppelte Linkverwendung noch ein verbrauchtes
+Token ohne Sitzung. SQLite-Schreibzugriffe warten höchstens fünf Sekunden.
 
-Der Mailer wird mit `sendLoginLink({email,url})` injiziert. Der Service erhält
-eine injizierbare Uhr. Tests verwenden eine feste Uhr, temporäre echte SQLite-Dateien
-und einen nur im Test existierenden Mailadapter. Die Fachlogik wird nicht gemockt.
+Die Migrationen sind wiederholbar. Auth wird vor Kommentaren angelegt.
+Abgelaufene Links, Sitzungen und Ratenlimits werden beim Start und alle 15 Minuten
+bereinigt. Konten bleiben erhalten.
 
-Repository-Aufrufe öffnen jeweils eine eigene Verbindung und schließen sie wieder.
-`openDb` muss daher eine neue Verbindung liefern, keinen geteilten Singleton.
-Die SQLite-Bibliotheken entsprechen dem vorhandenen Backend. Bei Verifikation:
-BEGIN IMMEDIATE → gültigen unbenutzten Token per UPDATE ... RETURNING verbrauchen →
-Nutzer anlegen oder finden → COMMIT. Bei Fehler ROLLBACK. Konkurrenz auf derselben
-Datei wird durch SQLite-Schreibsperren geregelt; busy_timeout beträgt 5 Sekunden.
+## Schutz
+Link- und Sitzungstoken bestehen aus 32 zufälligen Bytes; gespeichert wird SHA-256.
+Der Linktoken liegt im URL-Fragment. Die Oberfläche liest ihn in ihren Zustand,
+entfernt ihn aus der Adressleiste und sendet ihn erst nach Bestätigung per POST.
+Nach einem Neuladen der Bestätigungsseite muss der Link aus der Mail erneut geöffnet werden.
 
-## Sicherheit und Grenzen (A08)
+Cookies: HttpOnly, SameSite=Lax, Path=/, sieben Tage; bei HTTPS zusätzlich Secure
+und __Host-Präfix. Kein Domain-Attribut und kein Token im LocalStorage.
+Jeder neue Login ersetzt die mitgesendete bisherige Sitzung.
 
-32 zufällige Bytes aus Node `crypto.randomBytes`, SHA-256 nur zur Speicherung
-dieses hochentropischen Tokens (kein Verfahren zur Passwortspeicherung).
-Kein Raw-Token in Datenbank oder Serviceantwort. Der Link nutzt einen URL-Fragment-
-Parameter, damit der Token beim Laden der Seite nicht als HTTP-URL mitgesendet wird.
-Die spätere UI muss ihn nach expliziter Bestätigung per POST senden und aus der
-Adressleiste entfernen. Ohne diese UI ist der Link noch keine nutzbare Anmeldung.
+Schreibende APIs benötigen passenden Origin, JSON und X-StudyPrio-Request: 1.
+Es gibt keine Freigabe fremder Origins per CORS. Das schützt gegen CSRF,
+einschließlich fremder Login- und Logout-Formulare. API-Antworten sind nicht cachebar.
+Ratenlimits liegen in SQLite und überstehen Neustarts. Forwarded-IP-Header werden
+nicht vertraut; hinter einem Proxy gilt zunächst dessen IP für alle Nutzer.
+Proxykonfiguration ist vor einem öffentlichen Betrieb gesondert abzustimmen.
 
-App-Origin wird serverseitig konfiguriert, nicht aus einem untrusted Host-Header
-übernommen; HTTPS außer für ausdrücklich lokale HTTP-Origins.
-Produktionsreife ist nicht gegeben: Sitzung, Rate-Limits, CSRF, Mailtransport,
-Tokenbereinigung und Betriebskonfiguration fehlen noch.
+SMTP nutzt TLS mit Zertifikatsprüfung und Zeitlimits. Der lokale Modus ist in
+Produktion und mit öffentlicher App-Origin gesperrt; der Server bindet darin
+ausschließlich an 127.0.0.1. Testlinks dürfen nicht weitergegeben werden.
+Unbekannte Fehler geben keine Datenbank- oder SMTP-Details an Clients weiter.
 
-## Integration
+## Schnittstellen für die anderen Bereiche
+createApp liefert neben app das Middleware requireAuth und userDirectory zurück.
+requireAuth setzt req.user mit id, email, emailVerifiedAt, createdAt.
+userDirectory.findVerifiedByEmail(email) ist asynchron und nur serverintern,
+beispielsweise für eine bereits berechtigte Mitgliederverwaltung.
 
-Noch keine Änderung an Ahshans server.js oder Migrationsrunner. Auth-Migration
-vor abhängigen Benutzertabellen-Fremdschlüsseln registrieren. Repository kann
-mit `createAuthRepository({openDb: getDbConnection})` angebunden werden.
-Mailer, Domains und App-Origin beim Aufbau des Services explizit übergeben.
+HTTP-Datenformat: { data: ... } oder { error: { code, message } }.
+Für schreibende Frontend-Aufrufe frontend/src/api.js verwenden.
+Kommentare sind bis zur Integration echter Aufgabenrechte gesperrt. Ahshans
+Kommentarcode bleibt erhalten. Seine Rechteprüfungen benötigen beim Anschluss
+await; zusätzlich ist der Vertrag Task-ID oder Taskobjekt gemeinsam festzulegen.
 
-Der aktuelle Server enthält noch mockRequireAuth und immer erlaubende
-Kommentarrechte. Das ist kein geschützter Betrieb. Außerdem verwenden die
-Kommentar-Routen Rechteprüfungen ohne await und geben Task-IDs statt Taskobjekten
-weiter. Vor Einsatz des geplanten asynchronen AccessService muss Ahshans Modul
-angepasst/geprüft werden; dieses Auth-Paket ändert nicht stillschweigend sein Modul.
+## Betrieb und Grenzen
+Installation und API-Liste: INSTALL.md. Es gibt noch keinen produktiven Deployment-Test.
+Die Migration ist kein allgemeines versioniertes Framework; _migrations aus
+dem Grundgerüst wird bisher nicht als Versionshistorie verwendet.
+Echte Zustellung und Rechteintegration sind noch nicht abgenommen.
 
-## Eingesetzte KI-Werkzeuge
-
-ChatGPT/Codex für Entwurf, Code und Testentwurf. Automatisierte Prüfung wird im
-Übergabedokument protokolliert. Review/Verständnis durch Jaouad und die Gesamt-
-integration sind ausdrücklich offen.
+## KI-Nutzung
+ChatGPT/Codex für Entwurf, Umsetzung, Testentwurf und Dokumentation.
+Automatisierte Tests prüfen reale temporäre SQLite-Datenbanken und HTTP-Aufrufe.
+Jaouads eigene Codeprüfung und Erklärung stehen noch aus.
 
 Quellen: [Node crypto](https://nodejs.org/api/crypto.html),
-[SQLite RETURNING](https://www.sqlite.org/lang_returning.html).
+[SQLite RETURNING](https://www.sqlite.org/lang_returning.html),
+[Nodemailer SMTP](https://nodemailer.com/smtp).

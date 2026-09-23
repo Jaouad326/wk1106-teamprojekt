@@ -28,7 +28,7 @@ export function createAuthRepository({ openDb }) {
       ));
     },
 
-    consumeLoginToken(tokenHash, verifiedAt) {
+    consumeLoginToken(tokenHash, verifiedAt, session) {
       return withDb(async db => {
         await db.exec('BEGIN IMMEDIATE;');
         try {
@@ -51,12 +51,52 @@ export function createAuthRepository({ openDb }) {
             'SELECT id, email, emailVerifiedAt, createdAt FROM users WHERE email = ?',
             [token.email]
           );
+          // Link und Sitzung gehören in dieselbe Transaktion.
+          if (session) {
+            await db.run(
+              'INSERT INTO auth_sessions (tokenHash, userId, createdAt, expiresAt) VALUES (?, ?, ?, ?)',
+              [session.tokenHash, user.id, verifiedAt, session.expiresAt]
+            );
+            if (session.previousHash) {
+              await db.run('DELETE FROM auth_sessions WHERE tokenHash = ?', [session.previousHash]);
+            }
+          }
           await db.exec('COMMIT;');
           return user;
         } catch (error) {
           await db.exec('ROLLBACK;');
           throw error;
         }
+      });
+    },
+
+    findSession(tokenHash, at) {
+      return withDb(async db => (await db.get(
+        `SELECT u.id, u.email, u.emailVerifiedAt, u.createdAt FROM auth_sessions s
+         JOIN users u ON u.id = s.userId WHERE s.tokenHash = ? AND s.expiresAt > ?`,
+        [tokenHash, at]
+      )) ?? null);
+    },
+
+    deleteSession(tokenHash) {
+      return withDb(db => db.run('DELETE FROM auth_sessions WHERE tokenHash = ?', [tokenHash]));
+    },
+
+    takeAttempt(keyHash, at, windowMs) {
+      return withDb(db => db.get(
+        `INSERT INTO auth_limits (keyHash, hits, expiresAt) VALUES (?, 1, ?)
+         ON CONFLICT(keyHash) DO UPDATE SET
+           hits = CASE WHEN expiresAt <= ? THEN 1 ELSE hits + 1 END,
+           expiresAt = CASE WHEN expiresAt <= ? THEN excluded.expiresAt ELSE expiresAt END
+         RETURNING hits, expiresAt`, [keyHash, at + windowMs, at, at]
+      ));
+    },
+
+    cleanup(at) {
+      return withDb(async db => {
+        await db.run('DELETE FROM auth_login_tokens WHERE expiresAt <= ? OR usedAt IS NOT NULL', [at.toISOString()]);
+        await db.run('DELETE FROM auth_sessions WHERE expiresAt <= ?', [at.toISOString()]);
+        await db.run('DELETE FROM auth_limits WHERE expiresAt <= ?', [at.getTime()]);
       });
     },
 

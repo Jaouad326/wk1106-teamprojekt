@@ -49,8 +49,8 @@ export function createAuthService({ repository, mailer, allowedDomains, appOrigi
         expiresAt: new Date(createdAt.getTime() + LINK_LIFETIME_MS).toISOString()
       });
       const url = new URL('/auth/verify', origin);
-      // The fragment is not sent in HTTP requests/referrers. A later UI explicitly
-      // submits the token by POST; email link scanners must not consume it on GET.
+      // Das Fragment bleibt beim Laden lokal. Erst die Bestätigung sendet den
+      // Token per POST; ein einfacher Linkabruf darf ihn nicht verbrauchen.
       url.hash = new URLSearchParams({ token }).toString();
       try {
         await mailer.sendLoginLink({ email, url: url.toString() });
@@ -62,11 +62,11 @@ export function createAuthService({ repository, mailer, allowedDomains, appOrigi
       return { message: 'Bitte prüfe dein Postfach auf den Anmeldelink.' };
     },
 
-    async verifyLoginToken(token) {
+    async verifyLoginToken(token, session) {
       if (typeof token !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(token)) {
         throw new AuthError('INVALID_LOGIN_LINK', 'Der Anmeldelink ist ungültig oder abgelaufen.');
       }
-      const user = await repository.consumeLoginToken(hashToken(token), now().toISOString());
+      const user = await repository.consumeLoginToken(hashToken(token), now().toISOString(), session);
       if (!user) {
         throw new AuthError('INVALID_LOGIN_LINK', 'Der Anmeldelink ist ungültig oder abgelaufen.');
       }

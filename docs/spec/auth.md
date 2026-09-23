@@ -1,61 +1,53 @@
 # UC-01: Anmeldung über Hochschul-E-Mail
 
-Stand: 22.09.2026, erster Zwischenstand. Kein fertiger Login.
+Stand: 23.09.2026. Login im lokalen Testmodus umgesetzt; echter Mailversand noch nicht abgenommen.
 
-## Ziel und Abgrenzung
+## Ziel
+StudyPrio bestätigt den Zugriff auf eine erlaubte Hochschul-E-Mail-Adresse.
+Es werden keine Uni-Passwörter abgefragt. Das ist kein offizieller THM-SSO
+und kein Nachweis des aktuellen Studierendenstatus.
+Im lokalen Testmodus wird auch kein echter Mailboxzugriff nachgewiesen.
 
-StudyPrio bestätigt den Zugriff auf eine zugelassene Hochschul-E-Mail-Adresse.
-Die Anwendung bekommt kein Uni-Passwort und verwendet keinen THM-SSO.
-Mailzugriff beweist nicht automatisch einen aktuellen Studierendenstatus.
-Die tatsächlichen zugelassenen THM-Domains müssen vor Integration geprüft werden;
-es gibt absichtlich keine geratene produktive Standardliste.
+## Ablauf
+1. Nutzer gibt seine Hochschul-E-Mail ein.
+2. Backend prüft die Adresse und erzeugt einen Link mit 15 Minuten Gültigkeit.
+3. Im SMTP-Modus geht der Link per Mail raus. Im lokalen Testmodus steht er nur im Backend-Terminal.
+4. Nutzer öffnet den Link und klickt auf „Anmeldung bestätigen“. Laden allein verbraucht ihn nicht.
+5. Konto und eine neue Sitzung werden gemeinsam gespeichert. Der Link ist danach verbraucht.
+6. Die Sitzung bleibt nach Neuladen und Backend-Neustart erhalten, höchstens sieben Tage.
+7. „Abmelden“ löscht die Sitzung auf dem Server und das Cookie im Browser.
 
-## Normalablauf
+## Regeln und Fehlerfälle
+- Nur ausdrücklich konfigurierte Domains, keine automatische Freigabe von Subdomains.
+- Leerzeichen außen entfernen, Kleinschreibung, begrenzte ASCII-Mailboxsyntax.
+- Kein Konto vor Bestätigung. Weitere Anmeldungen behalten dieselbe Nutzer-ID.
+- Ungültige, abgelaufene und verwendete Links liefern dieselbe Fehlermeldung.
+- Zwei gleichzeitige Bestätigungen: höchstens eine erfolgreich.
+- Scheitert die Konto- oder Sitzungserstellung, bleibt der Link unverbraucht.
+- Scheitert der Versand, wird der Link widerrufen.
+- Höchstens drei Linkanforderungen pro Adresse sowie 30 pro IP in 15 Minuten.
+  Bestätigungsversuche sind zusätzlich auf 30 pro IP in 15 Minuten begrenzt.
+- Abgelaufene oder abgemeldete Sitzungen erlauben keinen Zugriff.
+- Die Oberfläche zeigt Ladezustand, Fehler, Versandbestätigung und lokalen Testmodus an.
 
-1. Nutzer gibt eine Adresse einer konfigurierten Hochschuldomain ein.
-2. Backend normalisiert die Adresse (Leerzeichen außen entfernen, Kleinschreibung).
-3. Ein zufälliger Link wird gespeichert und über einen Mailadapter versendet.
-4. Nutzer bestätigt den Link auf der noch zu implementierenden Bestätigungsseite.
-5. Backend verbraucht den Token genau einmal und findet/erstellt das verifizierte Konto.
-6. Erst die nächste Lieferung erstellt daraufhin eine Sitzung und zeigt den Login an.
+## Daten
+User: id, email, emailVerifiedAt, createdAt.
+auth_login_tokens: tokenHash, email, createdAt, expiresAt, usedAt.
+auth_sessions: tokenHash, userId, createdAt, expiresAt.
+auth_limits: keyHash, hits, expiresAt.
 
-Die Schritte 1–5 sind als Service implementiert, noch nicht als UI-/HTTP-Ablauf.
-Der Test-Mailadapter fängt Nachrichten nur im Testprozess ab. Echte Zustellung
-ist noch nicht implementiert oder geprüft.
+Zeitpunkte sind UTC als ISO-Strings; Ratenlimits verwenden Millisekunden.
+Roh-Tokens liegen nicht in der Datenbank. Session-Token werden ausschließlich
+im HttpOnly-Cookie übertragen, nicht in der JSON-Antwort.
 
-## Regeln und Akzeptanzkriterien
+## Offene Integration
+Zugelassene THM-Maildomains müssen anhand der tatsächlich genutzten Teamadressen
+festgelegt werden. Die Beispieldomain campus.example ist nur für lokale Tests.
+SMTP-Zugang und echte Zustellung sind noch offen. Aufgaben, Gruppen und Kommentare
+werden anschließend verbunden. Kommentare liefern bis zur Rechteintegration 503,
+ohne Anmeldung 401.
 
-- Nur ausdrücklich konfigurierte Domains; keine automatische Freigabe aller Subdomains.
-- ASCII-Mailboxsyntax; leere Eingaben, mehrere @, Zeilenumbrüche und ungültige
-  Domain-/Mailboxwerte werden abgewiesen. Keine vollständige RFC-Mailboxunterstützung.
-- Link gilt 15 Minuten. Exakt am Ablaufzeitpunkt wird er nicht mehr angenommen.
-- Abruf der Mail/GET darf den Link nicht verbrauchen. Später explizite Bestätigung per POST.
-- Falsche, abgelaufene und bereits verwendete Tokens erzeugen dieselbe fachliche Fehlermeldung.
-- Vor Bestätigung wird kein Benutzerkonto angelegt.
-- Weitere Anmeldungen derselben normalisierten Adresse behalten dieselbe Nutzer-ID.
-- Zwei konkurrierende Bestätigungen desselben Tokens: höchstens eine erfolgreich.
-- Scheitert die Kontoanlage, darf der Token nicht dauerhaft verbraucht sein.
-- Scheitert der Mailversand, wird dieser Token widerrufen; kein vorgetäuschter Erfolg.
-- Die Anforderungsantwort enthält weder Token noch Aussage, ob ein Konto schon existiert.
-
-## Daten und Schnittstellen
-
-`User`: `id`, `email`, `emailVerifiedAt`, `createdAt` (Strings, UTC-Zeitpunkte als ISO).
-`auth_login_tokens`: `tokenHash`, `email`, `createdAt`, `expiresAt`, `usedAt`.
-Token-Metadaten und Hash sind ausschließlich intern und dürfen nicht an Clients gehen.
-
-Service: `requestLoginLink(email)`, `verifyLoginToken(token)`,
-`findVerifiedByEmail(email)`. Letzteres ist für die spätere berechtigte
-Mitgliederverwaltung bestimmt und kein öffentlicher Suchendpunkt.
-
-## Noch offen, nicht als erfüllt bewerten
-
-HTTP-Routen, Login-UI, persistente Sitzungen, Logout, requireAuth, CSRF,
-Versand-/Verifikationslimits, Mailprovider, zugelassene Domains und Bereinigung
-abgelaufener Tokens. Eigenständige Services nicht direkt ungeschützt veröffentlichen.
-
-## Eingesetzte KI-Werkzeuge
-
-ChatGPT/Codex am 22.09.2026: Entwurf und Implementierung der Service-/Repository-
-Schicht sowie automatisierter Tests. Menschliche Codeprüfung und Erklärung durch
-Jaouad stehen noch aus. Keine gemeinsame Teamfreigabe oder Produktionsabnahme behauptet.
+## KI-Nutzung
+ChatGPT/Codex am 22.–23.09.2026: Entwurf, Code, Tests und Dokumentation.
+Automatisierte Prüfergebnisse stehen in docs/auth-handoff.md.
+Menschliche Prüfung und Erklärung durch Jaouad stehen noch aus.

@@ -1,0 +1,19 @@
+* { box-sizing: border-box; }
+body { margin: 0; background: #f3f5f7; color: #172936; font-family: system-ui, sans-serif; }
+.auth-layout { max-width: 680px; margin: 48px auto; padding: 0 20px; }
+.auth-layout header { margin-bottom: 28px; }
+.auth-layout h1 { color: #16634b; margin-bottom: 8px; }
+.auth-layout p { line-height: 1.6; overflow-wrap: anywhere; }
+.auth-card { padding: 28px; background: white; border: 1px solid #dce3e7; border-radius: 12px; }
+.auth-card label { display: block; font-weight: 600; margin: 20px 0 8px; }
+.auth-card input { width: 100%; padding: 12px; border: 1px solid #647683; border-radius: 6px; font: inherit; }
+.auth-card button { padding: 12px 18px; margin: 16px 8px 0 0; background: #16634b; color: white; border: 1px solid #16634b; border-radius: 6px; font: inherit; cursor: pointer; }
+.auth-card button.secondary { color: #16634b; background: white; }
+.auth-card button:disabled { opacity: .65; cursor: wait; }
+.auth-card :focus-visible { outline: 3px solid #286dd4; outline-offset: 3px; }
+.auth-note { background: #fff4d5; padding: 12px; border-radius: 6px; }
+.auth-error { color: #9b2424; background: #fff0f0; padding: 12px; }
+.auth-message { background: #e6f5ee; padding: 12px; }
+.auth-hint { color: #52616c; font-size: .9rem; margin-top: 24px; }
+.auth-user { border-bottom: 1px solid #dce3e7; padding-bottom: 18px; }
+@media (max-width: 480px) { .auth-layout { margin-top: 24px; } .auth-card { padding: 20px; } }

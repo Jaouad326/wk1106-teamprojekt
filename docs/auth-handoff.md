@@ -1,62 +1,64 @@
-# Jaouads Auth-Paket: Übergabe und nächste Schritte
+# Anmeldung: Stand und Übergabe
 
-Basis: main 7b45b5d vom Abruf am 22.09.2026. Arbeitsbranch: work/jaouad-auth.
-Erster Zwischenstand zur gemeinsamen Prüfung; noch nicht in main integriert.
+Arbeitsbranch: work/jaouad-auth. Noch nicht in main integriert.
+Basis des gemeinsamen Codes: main 7b45b5d.
 
-## Heute: Dienstag, 22.09.
+## Dienstag, 22.09.
+Anmeldelinks, Mailprüfung, Kontoanlage und 13 Tests.
+Commit: 470dee3e90ae4bbe37950b7e4fec39ca17da1c26.
 
-Eigene erste Lieferung: Mailvalidierung, kurzlebiger Einmal-Link, Speicherung
-nur des Tokenhashes, atomare Verifikation/Kontoanlage, Benutzerverzeichnis.
-Keine öffentlichen Routen, echte Zustellung oder Sitzung vorhanden.
-Ahshans globale Dateien, Kommentarmodul und Abhängigkeiten bleiben unverändert.
+## Mittwoch, 23.09.
+Sitzungen in SQLite, requireAuth, Logout, HTTP-Routen, Ratenlimits,
+Schutz schreibender Anfragen, Login-Oberfläche und konfigurierbarer Mailadapter.
+Die Sitzung übersteht Neuladen und Backend-Neustart. Link und Sitzung werden
+gemeinsam in einer Transaktion verarbeitet.
 
-Aus `backend/` mit installierten Abhängigkeiten:
+MAIL_MODE=local ermöglicht einen vollständigen lokalen Ablauf ohne Mailkonto,
+aber bestätigt keinen echten Postfachzugriff. MAIL_MODE=smtp ist implementiert;
+echte Zustellung ist mangels konfiguriertem Mailkonto noch nicht getestet.
+Keine echten Mails wurden versendet.
 
-```sh
-node --test tests/auth/auth.test.js
-```
+## Gemeinsame Dateien und Anschluss
+server.js enthält keinen festen Testnutzer und keine pauschal erlaubten Rechte mehr.
+Der bisherige Kommentarrouter bleibt unverändert in seinem Modul, ist aber noch
+nicht wieder angebunden. Stattdessen: 401 ohne Anmeldung, 503 bis zur Rechteintegration.
+App.jsx zeigt hinter AuthGate vorerst eine Willkommensansicht. Hier kann die
+Aufgabenansicht eingesetzt werden; AuthGate nimmt sie als children entgegen.
 
-Die Tests öffnen reale temporäre SQLite-Datenbanken und löschen nur ihre eigenen
-Testverzeichnisse. Sie versenden keine Nachrichten und ändern keine Projekt-Datenbank.
-Domain campus.example ist ausschließlich eine erfundene Testdomain.
+Backend: requireAuth und userDirectory aus createApp nutzen.
+Frontend: api() für JSON-Aufrufe mit dem benötigten Header verwenden.
+Vor Anbindung der Kommentare müssen await und die Übergabe von Task-ID/Taskobjekt
+mit Ahshan und der Aufgaben-/Gruppenverwaltung abgestimmt werden.
+Globale Startbefehle lesen jetzt backend/.env ein. Setup siehe INSTALL.md.
 
-## Mittwoch, 23.09. – nächster echter Arbeitsschritt
+## Prüfung
+Am 23.09.2026 unter Node.js 24.19.0:
+- Backend npm test: 26 Tests bestanden, keine fehlgeschlagen oder übersprungen.
+- Frontend npm run build: erfolgreich.
+- Frische Arbeitskopie: npm ci in Root, Backend und Frontend erfolgreich;
+  Migration zweimal, 26 Tests und Frontend-Build erfolgreich.
+- Start über npm run dev im Root, HTML-Fallback und kompletter lokaler
+  Login-/Logout-Ablauf per HTTP über den Vite-Proxy erfolgreich.
+- Echter Browsertest noch offen: Der Browser konnte in der Arbeitsumgebung
+  nicht gestartet werden (Download-/Laufzeitprobleme). Darstellung und Klickablauf
+  müssen auf einem Teamrechner geprüft werden. Ein Build ersetzt diesen Test nicht.
 
-- Zugelassene THM-Maildomains und konfigurierbaren Versandweg klären.
-- Persistente Sitzung, requireAuth, Logout, CSRF und Rate-Limits implementieren.
-- Auth-HTTP-Routen und Login-/Bestätigungsoberfläche anschließen.
-- Echte Zustellung prüfen, falls Zugangsdaten verfügbar; sonst eindeutig als blockiert markieren.
-- Feste Testanmeldung aus dem gemeinsamen Server erst im Zuge sicherer Integration ersetzen.
+Tests verwenden temporäre SQLite-Dateien und erfundene Adressen unter campus.example.
+SMTP-Adapter ist mit einem Testtransport geprüft, keine echte Zustellung.
+Das ist keine Produktivabnahme.
 
 ## Donnerstag, 24.09.
-
-- Auth mit Aufgaben/Gruppen/Kommentaren integrieren und Rechtefälle testen.
-- Fehlendes await und AccessService-Vertrag im Kommentarcode mit Ahshan klären.
-- Spec/Architektur anhand tatsächlichen Codes aktualisieren; Installationsprobe.
-- Alle Teammitglieder prüfen und erklären eigene sowie angrenzende Bereiche.
+Maildomain und Versandkonfiguration bestätigen, echte Zustellung gemeinsam prüfen.
+Aufgaben, Gruppen und Kommentare anbinden; Rechtefälle und Neuinstallation testen.
+Spec und Architektur mit dem Gesamtprojekt abgleichen. Eigenen Code erklären können.
 
 ## Freitag, 25.09.
-
-Nur Abnahme/Fehlerkorrektur und autorisierte Integration, finaler annotated Tag
-auf Default-Branch und Abgabe-Mail. Nicht bis Freitag mit der ersten Integration warten.
-Die Arbeit ist nicht automatisch eingeplant; die nächsten Schritte erfolgen in
-weiteren gemeinsamen Arbeitssitzungen. Keine künstliche Verteilung fertiger Commits.
-
-## Prüfergebnis
-
-Am 22.09.2026 unter Node.js 24.19.0 nach `npm ci --no-audit --no-fund`
-im Backend ausgeführt: `node --test tests/auth/auth.test.js`.
-Ergebnis: 13 Tests bestanden, 0 fehlgeschlagen, 0 übersprungen.
-
-Geprüft wurden unter anderem Ablaufgrenze, Einmalverwendung, konkurrierende
-Bestätigung, Versandfehler, Eingabevalidierung und Transaktions-Rollback.
-Dies ist ein automatisierter Test des isolierten Auth-Kerns, keine
-Produktivabnahme und kein Test des vollständigen Login-Flows. Echte Zustellung,
-Browser-Sitzung, HTTP-Schutzmaßnahmen und Integration sind noch offen.
+Abnahme, Fehlerkorrekturen und Abgabe. Kein künstliches Verteilen fertiger Commits.
+Finalen Tag und Abgabe-Mail erst nach Teamprüfung erstellen.
 
 ## Zum Erklären
-
-1. Warum liegt nur ein Hash und nicht der vollständige Linktoken in SQLite?
-2. Warum ist E-Mail-Zugriff kein Beweis für aktuellen Studierendenstatus?
-3. Was verhindert zwei erfolgreiche Verwendungen desselben Links?
-4. Warum reicht ein verifiziertes Konto allein noch nicht für einen eingeloggten Browser?
+1. Wieso speichern wir nur Tokenhashes?
+2. Warum müssen Linkverbrauch und Sitzungserstellung gemeinsam gespeichert werden?
+3. Was passiert beim Logout und nach sieben Tagen?
+4. Wieso beweist der lokale Modus keinen Mailboxzugriff?
+5. Wozu prüfen wir Origin und den zusätzlichen Header?

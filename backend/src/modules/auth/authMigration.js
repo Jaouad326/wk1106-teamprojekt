@@ -1,4 +1,4 @@
-// Owns only auth tables. Register this before task/group migrations at integration.
+// Auth-Tabellen zuerst anlegen, bevor andere Module Nutzer referenzieren.
 export async function up(db) {
   await db.exec(`
     CREATE TABLE IF NOT EXISTS users (
@@ -16,5 +16,17 @@ export async function up(db) {
     );
     CREATE INDEX IF NOT EXISTS auth_login_tokens_expiry
       ON auth_login_tokens(expiresAt);
+    CREATE TABLE IF NOT EXISTS auth_sessions (
+      tokenHash TEXT PRIMARY KEY,
+      userId TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      createdAt TEXT NOT NULL,
+      expiresAt TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS auth_sessions_expiry ON auth_sessions(expiresAt);
+    CREATE TABLE IF NOT EXISTS auth_limits (
+      keyHash TEXT PRIMARY KEY,
+      hits INTEGER NOT NULL,
+      expiresAt INTEGER NOT NULL
+    );
   `);
 }

@@ -1,47 +1,26 @@
-import express from 'express';
-import cors from 'cors';
 import { getDbConnection } from './config/db.js';
-import { createCommentRouter } from './modules/comments/commentRoutes.js';
+import { readAuthConfig } from './config/authConfig.js';
+import { createMailer } from './modules/auth/mailer.js';
+import { createApp } from './app.js';
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use(cors());
-app.use(express.json());
-
-// --- TEMPORÄRE TEST-HELFER ---
-const mockRequireAuth = (req, res, next) => {
-  req.user = { id: 'test-user-1', email: 'test@thm.de' };
-  next();
-};
-const mockAccessService = {
-  canReadTask: (userId, taskId) => true,
-  canWriteTask: (userId, taskId) => true
-};
-// -----------------------------
-
-app.get('/api/health', async (req, res) => {
-  try {
-    const db = await getDbConnection();
-    await db.get('SELECT 1');
-    await db.close();
-    res.status(200).json({ data: { status: 'ok', database: 'connected' } });
-  } catch (error) {
-    res.status(500).json({ error: { code: 'INTERNAL_SERVER_ERROR', message: 'System health check failed' } });
-  }
-});
-
-// Verbinden uns mit der Datenbank und starten dann den Server
-getDbConnection().then(db => {
-  // Wir übergeben der Fabrik unsere Datenbank und die Test-Helfer
-  const commentRouter = createCommentRouter(db, mockRequireAuth, mockAccessService);
-  
-  // Schalten die Route scharf. Die URL sieht dann z.B. so aus: /api/tasks/123/comments
-  app.use('/api/tasks/:taskId/comments', commentRouter);
-  
-  app.listen(PORT, () => {
-    console.log(`Backend läuft auf http://localhost:${PORT}`);
+try {
+  const config = readAuthConfig();
+  const { app, repository } = createApp({ openDb: getDbConnection, config, mailer: createMailer(config) });
+  await repository.cleanup(new Date());
+  const cleanup = setInterval(() => repository.cleanup(new Date()).catch(() => {
+    console.error('Abgelaufene Anmeldedaten konnten nicht bereinigt werden.');
+  }), 15 * 60 * 1000);
+  cleanup.unref();
+  const server = app.listen(config.port, config.host, () => {
+    console.log(`Backend läuft auf http://${config.host}:${config.port}`);
+    if (config.mailMode === 'local') console.log('Lokaler Testmodus: Es werden keine E-Mails versendet.');
   });
-}).catch(err => {
-  console.error('Konnte Datenbank nicht verbinden:', err);
-});
+  server.on('error', () => { console.error('Backend konnte nicht gestartet werden. Ist der Port frei?'); process.exitCode = 1; });
+  for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => {
+    clearInterval(cleanup);
+    server.close();
+  });
+} catch {
+  console.error('Start fehlgeschlagen. Bitte backend/.env prüfen und npm run migrate ausführen.');
+  process.exitCode = 1;
+}
