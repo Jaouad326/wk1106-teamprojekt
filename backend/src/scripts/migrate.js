@@ -1,5 +1,6 @@
 import { getDbConnection } from '../config/db.js';
 import { up as commentsMigration } from '../modules/comments/commentMigration.js';
+import { up as groupsMigration } from '../modules/groups/groupMigration.js';
 
 async function runMigrations() {
   console.log('Starte Datenbank-Migrationen...');
@@ -18,6 +19,9 @@ async function runMigrations() {
     // 2. Die neuen Kommentar-Tabelle werden erstellt
     await commentsMigration(db);
     console.log('Migration für Kommentare erfolgreich.');
+    
+    await groupsMigration(db);
+    console.log('Migration für Gruppen erfolgreich.');
 
   } catch (error) {
     console.error('Fehler bei der Migration:', error);
