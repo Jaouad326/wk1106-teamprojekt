@@ -1,4 +1,5 @@
 import CommentSection from './features/comments/CommentSection.jsx';
+import GroupsPage from './features/groups/GroupsPage.jsx';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
       
       {/* Hier wird dein programmierter Baustein eingebunden! */}
       <CommentSection taskId="test-task-1" />
+      <GroupsPage />
     </div>
   );
 }
