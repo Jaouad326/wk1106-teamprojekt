@@ -6,6 +6,9 @@ import { createAuthRouter, createRequireAuth, protectWrites, asyncRoute } from '
 import { AuthError } from './modules/auth/authError.js';
 import { createGroupRouter } from './modules/groups/groupRoutes.js';
 import { createGroupService } from './modules/groups/groupService.js';
+import { createAccessService } from './access/accessService.js';
+import { createTaskModule } from './modules/tasks/taskModule.js';
+import { createCommentRouter } from './modules/comments/commentRoutes.js';
 
 export function createApp({ openDb, config, mailer, now = () => new Date(), mountFeatures = () => ({}) }) {
   const repository = createAuthRepository({ openDb });
@@ -30,19 +33,22 @@ export function createApp({ openDb, config, mailer, now = () => new Date(), moun
   const userDirectory = { findVerifiedByEmail: service.findVerifiedByEmail };
   const groupService = createGroupService({ openDb, userDirectory });
   app.use('/api/groups', createGroupRouter({ groupService, requireAuth }));
+  const taskModule = createTaskModule({ openDb, requireAuth, accessService: createAccessService({ openDb }) });
+  app.use('/api/tasks', taskModule.taskRouter);
+  app.use('/api/tasks/:taskId/comments', createCommentRouter({ openDb, requireAuth, taskService: taskModule.taskService }));
   // Team-Routen hier einhängen, bevor Fallback und Fehlerbehandlung folgen.
   const features = mountFeatures(app, { openDb, requireAuth, userDirectory });
   if (features?.then) throw new TypeError('mountFeatures muss synchron sein. Datenbankverbindungen vorher öffnen.');
-  // Ahshans Router bleibt erhalten. Erst mit echten Aufgabenrechten wieder anbinden.
-  app.use('/api/tasks/:taskId/comments', requireAuth, (req, res) => {
-    res.status(503).json({ error: { code: 'COMMENTS_NOT_READY', message: 'Kommentare werden noch mit den Aufgabenrechten verbunden.' } });
-  });
   app.use('/api', (req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Nicht gefunden.' } }));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
     if (error instanceof AuthError) return res.status(error.status).json({ error: { code: error.code, message: error.message } });
     if (error.type === 'entity.parse.failed') return res.status(400).json({ error: { code: 'BAD_JSON', message: 'Ungültiges JSON.' } });
     if (error.type === 'entity.too.large') return res.status(413).json({ error: { code: 'BODY_TOO_LARGE', message: 'Die Anfrage ist zu groß.' } });
+    if (typeof error.status === 'number' && error.status >= 400 && error.status < 600) {
+      const message = error.code ? error.message : 'Etwas ist schiefgelaufen. Bitte versuche es erneut.';
+      return res.status(error.status).json({ error: { code: error.code || 'ERROR', message, ...(error.fields ? { fields: error.fields } : {}) } });
+    }
     res.status(500).json({ error: { code: 'INTERNAL_SERVER_ERROR', message: 'Etwas ist schiefgelaufen. Bitte versuche es erneut.' } });
   });
   return { app, repository, requireAuth, userDirectory, features };

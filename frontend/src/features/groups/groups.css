@@ -1,4 +1,4 @@
-.groups-panel { max-width: 1120px; margin: 14px auto 0; padding: 28px 30px; background: #fff; border: 1px solid #e1e6e3; border-radius: 12px; box-shadow: 0 12px 30px rgba(32, 53, 45, .05); }
+.groups-panel { padding: 30px 0; background: transparent; border-top: 1px solid #cfdcd5; border-bottom: 1px solid #dce5e0; }
 .groups-heading { display: flex; align-items: flex-start; justify-content: space-between; }
 .groups-heading h2 { margin: 0; color: #202a35; font-family: Georgia, "Times New Roman", serif; font-size: 1.8rem; font-weight: 400; letter-spacing: -.045em; }
 .groups-count { display: grid; width: 32px; height: 32px; place-items: center; color: #2c5345; background: #e8efec; border-radius: 50%; font-size: .8rem; font-weight: 700; }

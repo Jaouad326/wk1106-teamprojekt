@@ -8,6 +8,9 @@ import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import { createApp } from '../../src/app.js';
 import { up } from '../../src/modules/auth/authMigration.js';
+import { up as commentsMigration } from '../../src/modules/comments/commentMigration.js';
+import { up as groupsMigration } from '../../src/modules/groups/groupMigration.js';
+import { up as tasksMigration } from '../../src/modules/tasks/taskMigration.js';
 import { SESSION_MS } from '../../src/modules/auth/sessionService.js';
 import { readAuthConfig } from '../../src/config/authConfig.js';
 import { createMailer } from '../../src/modules/auth/mailer.js';
@@ -20,7 +23,8 @@ async function fixture(t, { secure = false, failMail = false, mountFeatures } = 
     return db;
   };
   const db = await openDb();
-  await up(db); await db.close();
+  // Reihenfolge wie in scripts/migrate.js: createApp bindet Gruppen- und Aufgabenrouten fest ein.
+  await up(db); await commentsMigration(db); await groupsMigration(db); await tasksMigration(db); await db.close();
   const messages = [];
   let time = new Date('2026-09-23T12:00:00.000Z');
   const config = { appOrigin: secure ? 'https://study.example' : 'http://localhost:5173',
@@ -175,13 +179,14 @@ test('HTTP: session insert failure rolls back account and link together', async 
   } finally { await db.close(); }
 });
 
-test('HTTP: invalid JSON, large input and unavailable comments fail safely', async t => {
+test('HTTP: invalid JSON, large input and comments on unknown tasks fail safely', async t => {
   const f = await fixture(t);
   assert.equal((await f.request('/api/auth/request-link', { method: 'POST', body: '{' })).status, 400);
   assert.equal((await f.request('/api/auth/request-link', { method: 'POST', body: { email: 'x'.repeat(9000) } })).status, 413);
   assert.equal((await f.request('/api/tasks/test/comments')).status, 401);
   const cookie = await f.login();
-  assert.equal((await f.request('/api/tasks/test/comments', { cookie })).status, 503);
+  // Kommentare sind jetzt an echte Aufgaben gebunden; eine unbekannte Task-ID ist 404, kein Platzhalter mehr.
+  assert.equal((await f.request('/api/tasks/test/comments', { cookie })).status, 404);
 });
 
 test('cleanup removes expired tokens, sessions and limits but keeps users', async t => {

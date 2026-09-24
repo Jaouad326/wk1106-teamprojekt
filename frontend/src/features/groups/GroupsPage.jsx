@@ -8,7 +8,7 @@ import {
 } from './groupsApi.js';
 import './groups.css';
 
-export default function GroupsPage() {
+export default function GroupsPage({ onGroupsChange }) {
   const [groups, setGroups] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [members, setMembers] = useState([]);
@@ -21,6 +21,8 @@ export default function GroupsPage() {
   useEffect(() => {
     getGroups().then(setGroups).catch(setError).finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => { onGroupsChange?.(groups); }, [groups, onGroupsChange]);
 
   async function handleCreate(event) {
     event.preventDefault();

@@ -1,0 +1,14 @@
+.comments-panel { margin-top: 14px; padding: 16px; background: #fbfcfb; border: 1px solid #e1eae4; border-radius: 9px; }
+.comments-panel h4 { margin: 0 0 12px; color: #2c5345; font-size: .88rem; font-weight: 750; }
+.comments-status, .comments-empty { margin: 0; color: #8a9891; font-size: .82rem; }
+.comments-error { margin: 0 0 12px; padding: 9px 11px; color: #984139; background: #fff0ee; border-radius: 7px; font-size: .82rem; }
+.comments-list { display: grid; gap: 8px; margin: 0 0 14px; padding: 0; list-style: none; }
+.comments-list li { padding: 10px 12px; background: #fff; border: 1px solid #e6ede9; border-radius: 8px; }
+.comments-list p { margin: 0; color: #202a35; font-size: .85rem; white-space: pre-wrap; }
+.comments-list span { display: block; margin-top: 6px; color: #9aa6a0; font-size: .72rem; }
+.comment-form { display: grid; gap: 8px; }
+.comment-form label { color: #52635b; font-size: .74rem; font-weight: 650; }
+.comment-form textarea { padding: 9px 11px; color: #202a35; background: #fff; border: 1px solid #ccd8d1; border-radius: 8px; resize: vertical; font: inherit; }
+.comment-form textarea:focus-visible { outline: 2px solid #2c5345; outline-offset: 1px; }
+.comment-form button { justify-self: start; padding: 8px 14px; color: #fff; background: #2c5345; border: 0; border-radius: 7px; cursor: pointer; font-size: .8rem; font-weight: 700; }
+.comment-form button:disabled { opacity: .5; cursor: wait; }

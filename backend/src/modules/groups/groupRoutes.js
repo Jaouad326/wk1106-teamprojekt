@@ -6,7 +6,7 @@ function statusFor(error) {
 
 function sendError(res, error) {
   res.status(statusFor(error)).json({
-    error: { code: error.code || 'INTERNAL_SERVER_ERROR', message: error.message }
+    error: { code: error.code || 'INTERNAL_SERVER_ERROR', message: error.code ? error.message : 'Etwas ist schiefgelaufen. Bitte versuche es erneut.' }
   });
 }
 

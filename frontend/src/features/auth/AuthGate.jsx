@@ -82,6 +82,12 @@ export default function AuthGate({ children }) {
     setToken(''); setError(''); window.history.replaceState(null, '', '/');
   }
 
+  // Angemeldet: das Login-Layout (Hero + Karte) komplett verlassen, sonst
+  // rendert das Dashboard in der schmalen Login-Kartenspalte (Splitscreen-Effekt).
+  if (!loading && !loadFailed && !token && user) {
+    return <AuthContext.Provider value={{ user, logout }}>{children}</AuthContext.Provider>;
+  }
+
   return <main className="auth-layout">
     <section className="auth-intro" aria-label="StudyPrio">
       <header className="brand-lockup">
@@ -110,8 +116,6 @@ export default function AuthGate({ children }) {
             {user && <p>Aktuell angemeldet: {user.email}. Die Bestätigung ersetzt diese Sitzung.</p>}
             <button onClick={confirmLink} disabled={busy}>{busy ? 'Wird geprüft …' : 'Anmeldung bestätigen'}</button>
             <button className="secondary" onClick={discardLink} disabled={busy}>Zurück zur Anmeldung</button>
-          </> : user ? <>
-            <AuthContext.Provider value={{ user, logout }}>{children}</AuthContext.Provider>
           </> : <>
             <p className="form-eyebrow">DEIN KONTO</p>
             <h2>Willkommen zurück</h2>
