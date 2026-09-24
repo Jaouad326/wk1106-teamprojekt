@@ -1,6 +1,6 @@
 # Auth-Abschluss und kurze Erklärung
 
-Stand: 24.09.2026, work/jaouad-auth. Die für Freitag geplante technische
+Stand: 24.09.2026, Auth-Beitrag aus work/jaouad-auth für main. Die für Freitag geplante technische
 Abschlussprüfung wird heute vorgezogen. Dieser Stand ist kein Abgabe-Tag der Gesamtapp.
 
 ## Umfang von Jaouads Teil
@@ -20,14 +20,19 @@ Architektur, drei ADRs und Installations-/Integrationshinweise.
 | Frontend npm run build | Bestanden, auch in der frischen Arbeitskopie |
 | Frische Arbeitskopie | npm ci in Root/Backend/Frontend, zweimalige Migration, 29 Auth-/Clienttests, zwei SMTP-Tests und Build bestanden; npm run dev mit HTML, Deep Link, Health, Login, Cookie, Logout und Linkwiederverwendung geprüft |
 | Browser | Am 24.09. Login, ausdrückliche Bestätigung, Nutzerkontext, Aufgabenanlage, Reload, Sitzungsende und Logout auf Desktop/Mobil erfolgreich geprüft |
+| Echter Mailversand auf Windows | Von Jaouad am 24.09. bestätigt: Gmail-Verbindungstest, Eingang im THM-Postfach, Linkbestätigung/Login, angemeldet nach F5, Logout und Ablehnung desselben bereits verwendeten Links |
 
 Die SMTP-Tests verwenden nur einen lokalen SMTP-Server, erfundene Konten und
 bei jedem Lauf neu erzeugte Testzertifikate. Der Transport ist echt, die Zustellung
-an ein Hochschulpostfach wird damit nicht geprüft. Es wurden keine echten Mails gesendet.
+an ein Hochschulpostfach wird damit nicht geprüft. In diesen automatisierten Tests
+wurden keine echten Mails gesendet. Der zusätzliche echte Versandtest wurde von
+Jaouad selbst auf seinem Windows-PC durchgeführt und im Chat bestätigt.
+Es werden keine Mailadressen, Zugangsdaten oder Login-Links als Testbeleg veröffentlicht.
 
 Prüfumgebung: Node.js 24.19.0, npm 11.9.0, Linux; OpenSSL 3.0.13 für temporäre
 Testzertifikate. Keine fehlgeschlagenen oder übersprungenen Tests in den genannten
-Läufen. Installation auf Windows wurde nicht ausgeführt.
+Läufen. Zusätzlich hat Jaouad Installation, Migration und Mailablauf unter Windows
+ausgeführt; das ist ein manueller Funktionstest, kein zweiter Lauf aller automatisierten Tests.
 
 ## Anforderungen im Code finden
 
@@ -78,12 +83,14 @@ Frontenddateien auf frontend/src und frontend/src/features/auth.
     dass jemand aktuell eingeschrieben ist. Lokal wird auch kein Postfach geprüft.
 
 Die Punkte im Code nachvollziehen und selbst erklären. Ein Text ersetzt nicht
-Jaouads persönliche Prüfung; eine menschliche Abnahme wurde noch nicht bestätigt.
+Jaouads persönliche Codeprüfung. Sein manueller Anmeldetest ist bestätigt;
+die gemeinsame Abnahme der vollständigen Anwendung steht noch aus.
 
-## Echter Versand: noch notwendige Konfiguration
+## Echter Versand: Konfiguration auf weiteren Rechnern
 
-Es fehlt das Versandkonto der Gruppe. Die Anwendung fragt niemals das
-Uni-Passwort der Studierenden ab. Der Absender benötigt SMTP_HOST, SMTP_PORT,
+Jaouad hat ein separates Gmail-Versandkonto eingerichtet und die Zustellung geprüft.
+Die Anwendung fragt niemals das Uni-Passwort der Studierenden ab.
+Der Absender benötigt SMTP_HOST, SMTP_PORT,
 SMTP_USER, SMTP_PASS und MAIL_FROM; nur lokal in backend/.env eintragen.
 
 1. MAIL_MODE=smtp, erlaubte Empfängerdomains und neue DATABASE_PATH eintragen.
@@ -95,6 +102,11 @@ SMTP_USER, SMTP_PASS und MAIL_FROM; nur lokal in backend/.env eintragen.
 Der reine Verbindungstest sendet keine Mail und belegt noch keine Zustellung.
 Bei Fehler Host/Port/Zugang/erlaubten Absender im Anbieterportal prüfen;
 Zertifikatsprüfung nicht abschalten. Alle Befehle stehen auch in INSTALL.md.
+
+Bei Jaouads npm-Installation wurden sieben Sicherheitsmeldungen ausgegeben
+(zwei niedrig, vier hoch, eine kritisch). Ihre Betroffenheit ist noch nicht
+untersucht; die bestandenen Funktionstests sind keine Aussage über diese Meldungen.
+Kein automatisches npm audit fix --force wurde durchgeführt.
 
 ## Gemeinsame Abgabe nach der Zusammenführung
 

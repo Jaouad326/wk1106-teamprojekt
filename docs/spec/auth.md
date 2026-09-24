@@ -1,7 +1,8 @@
 # UC-01: Anmeldung über Hochschul-E-Mail
 
-Stand: 24.09.2026. Login einschließlich Team-Anschluss im lokalen Testmodus geprüft;
-echter Mailversand noch nicht abgenommen.
+Stand: 24.09.2026. Login einschließlich Team-Anschluss im lokalen Testmodus geprüft.
+Jaouad hat zusätzlich echte Gmail-Zustellung an sein THM-Postfach, Login,
+Sitzung nach Neuladen, Logout und Linkwiederverwendung unter Windows geprüft.
 
 ## P1/P2: Ziel und Rahmen
 
@@ -122,7 +123,8 @@ nicht behauptet; der geprüfte Umfang ist eine lokale App mit einem Backend.
 
 Die Empfängeradressen in den bereitgestellten Kursmails belegen mnd.thm.de.
 Weitere Domains müssen für die betreffenden Teamkonten bestätigt werden.
-campus.example ist nur für lokale Tests. SMTP-Zugang und echte Zustellung bleiben offen.
+campus.example ist nur für lokale Tests. Echter SMTP-Versand wurde von Jaouad
+geprüft; weitere Rechner benötigen eine eigene lokale Konfiguration.
 Aufgaben und Gruppen sind in einem separaten Prüfaufbau mit der gemeinsamen
 App-Fabrik verbunden. Die Montage in main erfolgt mit dem Team. Kommentare liefern
 bis zur Rechteintegration 503, ohne Anmeldung 401.
@@ -148,4 +150,5 @@ Automatisierte Prüfergebnisse stehen in docs/auth-abschluss.md und docs/auth-ha
 Zusätzlich wurden die SMTP-Wege mit tatsächlichen lokalen TLS-Verbindungen
 einschließlich negativer Fälle geprüft. Dokumentnamen, Datenfelder und Verweise
 wurden mit dem Code abgeglichen. Keine echte Zustellung wird daraus abgeleitet.
-Menschliche Prüfung und Erklärung durch Jaouad stehen noch aus.
+Jaouads manueller Funktionstest ist im Abschlussbericht festgehalten;
+persönliche Code-Erklärung und gemeinsame Teamabnahme stehen noch aus.

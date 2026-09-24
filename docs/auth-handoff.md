@@ -1,7 +1,7 @@
 # Anmeldung: Stand und Übergabe
 
-Arbeitsbranch: work/jaouad-auth. Noch nicht in main integriert.
-Basis des gemeinsamen Codes: main 7b45b5d.
+Entwicklungsbranch: work/jaouad-auth. Übergabe an das Team über main.
+Ursprüngliche Basis des gemeinsamen Codes: main 7b45b5d.
 
 ## Dienstag, 22.09.
 
@@ -66,7 +66,11 @@ Das ist keine Produktivabnahme.
   kein horizontaler Überlauf und keine JavaScript-Fehler.
 
 Für die Besprechung: [Integration und Demo](auth-integration.md).
-Echte SMTP-Zustellung und menschliche Teamabnahme sind weiterhin offen.
+Nachtrag zum echten Mailbetrieb: Jaouad hat auf seinem Windows-PC Gmail-SMTP
+eingerichtet und am 24.09. den Empfang im THM-Postfach sowie Login bestätigt.
+Auch Neuladen bei gültiger Sitzung, Logout und die Ablehnung des bereits
+verwendeten Links hat er selbst erfolgreich geprüft. Zugangsdaten bleiben lokal.
+Die gemeinsame Abnahme aller Teamteile ist weiterhin offen.
 
 ## Freitag, 25.09.
 

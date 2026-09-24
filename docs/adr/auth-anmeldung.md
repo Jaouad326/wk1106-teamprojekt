@@ -1,6 +1,6 @@
 # Entscheidung: Anmeldung per E-Mail-Link
 
-Status: umgesetzt im Auth-Branch, echter Versand noch zu prüfen.
+Status: umgesetzt; echter Gmail-Versand und Anmeldeablauf am 24.09. von Jaouad geprüft.
 Datum: 23.09.2026.
 
 ## Ausgangslage

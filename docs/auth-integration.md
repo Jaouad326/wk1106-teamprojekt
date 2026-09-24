@@ -90,8 +90,9 @@ Dies ersetzt keine serverseitige Prüfung: Alle geschützten Routen nutzen requi
 
 ## Noch gemeinsam zu erledigen
 
-- SMTP-Versandkonto einrichten. mnd.thm.de ist anhand der Kursmails belegt;
-  weitere Empfängerdomains bei Bedarf ergänzen. Mailkonto ist der Absender,
+- SMTP-Konfiguration auf jedem benötigten Rechner lokal einrichten. Jaouads
+  Gmail-Versand an sein THM-Postfach ist einschließlich Login/Logout geprüft.
+  mnd.thm.de ist belegt; weitere Empfängerdomains bei Bedarf ergänzen. Mailkonto ist der Absender,
   die Hochschuladresse ist der Empfänger; es werden keine Uni-Passwörter abgefragt.
 - Für SMTP neue DATABASE_PATH und Migration verwenden. Lokale Testkonten dürfen
   nicht übernommen werden; der Server blockiert den Moduswechsel auf derselben DB.

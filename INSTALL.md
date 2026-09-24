@@ -1,8 +1,9 @@
 # StudyPrio lokal starten
 
-Stand: 24.09.2026, Auth-Arbeitsbranch. Anmeldung ist lokal testbar.
-Eine gemeinsame Aufgaben-/Gruppen-Demo ist unten beschrieben. Die finale
-Integration in main einschließlich Kommentare/Dashboard ist noch offen.
+Stand: 24.09.2026, Auth-Beitrag für die gemeinsame Basis auf main.
+Jaouad hat den Login mit echter Gmail-Zustellung an sein THM-Postfach auf Windows
+erfolgreich geprüft. Die Aufgaben-/Gruppen-Demo ist unten beschrieben;
+die endgültige Zusammenführung der übrigen Teamteile steht noch aus.
 
 ## Voraussetzungen
 
@@ -12,12 +13,12 @@ Python und die C/C++-Buildwerkzeuge der Plattform benötigt.
 
 ## Installation
 
-Repository klonen, dann den Auth-Branch auswählen:
+Repository klonen und den gemeinsamen Hauptbranch auswählen:
 
 ```sh
 git clone https://github.com/Jaouad326/wk1106-teamprojekt.git
 cd wk1106-teamprojekt
-git switch work/jaouad-auth
+git switch main
 npm ci
 cd backend
 npm ci
@@ -70,7 +71,9 @@ mit derselben Datenbank ab. Bestehende Testdaten werden dabei nicht gelöscht.
 Mit npm run mail:check im Backend lassen sich TLS-Verbindung und Anmeldung prüfen,
 ohne eine Mail zu senden. Erst ein anschließend angeforderter und empfangener
 Anmeldelink belegt die echte Zustellung.
-Echte Zustellung ist noch zu prüfen. Es gibt keinen stillen Wechsel von SMTP auf Testlinks.
+Der Gmail-Versand wurde am 24.09. von Jaouad erfolgreich mit seinem THM-Postfach
+geprüft. Weitere Installationen benötigen ihre eigene lokale Konfiguration.
+Es gibt keinen stillen Wechsel von SMTP auf Testlinks.
 
 Bei öffentlichem Betrieb: NODE_ENV=production, APP_ORIGIN als HTTPS-Origin,
 HTTPS-Reverse-Proxy für Frontend und /api auf derselben Origin; HOST passend zum
@@ -108,7 +111,7 @@ Cookies bleiben bei Aufrufen über den Vite-Proxy auf derselben Origin.
 
 ## Bekannte offene Punkte
 
-Echte SMTP-Zustellung, finale Montage sowie Kommentarrechte sind noch offen.
+Finale Montage der übrigen Module sowie Kommentarrechte sind noch offen.
 Aufgaben-/Gruppenanschluss ist im separaten Prüfaufbau getestet.
 Bei 429 etwas warten: drei Mailanforderungen pro Adresse/15 Minuten,
 30 Anforderungen bzw. Bestätigungsversuche pro IP/15 Minuten.

@@ -166,7 +166,8 @@ await; zusätzlich ist der Vertrag Task-ID oder Taskobjekt gemeinsam festzulegen
 Installation und API-Liste: INSTALL.md. Es gibt noch keinen produktiven Deployment-Test.
 Die Migration ist kein allgemeines versioniertes Framework; _migrations aus
 dem Grundgerüst wird bisher nicht als Versionshistorie verwendet.
-Echte Zustellung und Rechteintegration sind noch nicht abgenommen.
+Echte Zustellung und der Login-/Logout-Ablauf wurden von Jaouad auf Windows
+mit Gmail und seinem THM-Postfach geprüft. Die gemeinsame Gesamtintegration ist offen.
 Aufgaben-/Gruppenrechte wurden am 24.09. im gemeinsamen Prüfaufbau getestet;
 Kommentarrechte und endgültige Montage bleiben offen. auth_settings bindet die
 Datenbank an local oder smtp. Beim Wechsel ist eine neue Datenbank erforderlich,
@@ -197,7 +198,8 @@ ChatGPT/Codex für Entwurf, Umsetzung, Testentwurf und Dokumentation.
 Automatisierte Tests prüfen reale temporäre SQLite-Datenbanken und HTTP-Aufrufe.
 Die zusätzliche SMTP-Prüfung verwendet echten Nodemailer und einen lokalen
 SMTP-Server mit temporärem Zertifikat. Erfolgreiche und abgewiesene TLS-Verbindungen
-sind geprüft; ein externer Versandanbieter wird dadurch nicht als abgenommen dargestellt.
+sind geprüft. Separat hat Jaouad den manuellen Gmail-Versandtest bestätigt,
+wie im [Abschlussbericht](../auth-abschluss.md) dokumentiert.
 Code, Diagramme, Datennamen und Testaussagen wurden gegeneinander abgeglichen.
 Jaouads eigene Codeprüfung und Erklärung stehen noch aus.
 
