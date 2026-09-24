@@ -1,5 +1,6 @@
 import { getDbConnection } from '../config/db.js';
 import { up as commentsMigration } from '../modules/comments/commentMigration.js';
+import { up as authMigration } from '../modules/auth/authMigration.js';
 
 async function runMigrations() {
   console.log('Starte Datenbank-Migrationen...');
@@ -15,13 +16,15 @@ async function runMigrations() {
       );
     `);
 
-    // 2. Die neuen Kommentar-Tabelle werden erstellt
+    await authMigration(db);
+    console.log('Migration für Anmeldung erfolgreich.');
+    // Die Migrationen sind wiederholbar und erhalten bestehende Daten.
     await commentsMigration(db);
     console.log('Migration für Kommentare erfolgreich.');
 
   } catch (error) {
     console.error('Fehler bei der Migration:', error);
-    process.exit(1);
+    process.exitCode = 1;
   } finally {
     await db.close();
   }
