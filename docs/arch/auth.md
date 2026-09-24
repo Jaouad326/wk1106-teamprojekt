@@ -1,6 +1,6 @@
 # Architektur des Anmeldebereichs
 
-Stand: 23.09.2026. Beitrag zur Gesamtarchitektur (arc42 A05/A06/A08).
+Stand: 24.09.2026. Beitrag zur Gesamtarchitektur (arc42 A05/A06/A08).
 
 ## Aufteilung
 - authService: E-Mail prüfen, Link erzeugen und bestätigen.
@@ -11,6 +11,7 @@ Stand: 23.09.2026. Beitrag zur Gesamtarchitektur (arc42 A05/A06/A08).
 - authConfig: Einstellungen aus der Umgebung prüfen.
 - app.js: Bausteine verbinden; server.js: Server starten und alte Daten bereinigen.
 - AuthGate: Loginformular, explizite Bestätigung, Sitzungsprüfung und Logout.
+- AuthContext/useAuth: angemeldeten Nutzer und Logout an die anderen Ansichten weitergeben.
 
 ## Ablauf und Datenbank
 Jeder Repository-Aufruf öffnet eine eigene Verbindung und schließt sie wieder.
@@ -50,9 +51,20 @@ createApp liefert neben app das Middleware requireAuth und userDirectory zurück
 requireAuth setzt req.user mit id, email, emailVerifiedAt, createdAt.
 userDirectory.findVerifiedByEmail(email) ist asynchron und nur serverintern,
 beispielsweise für eine bereits berechtigte Mitgliederverwaltung.
+Ungültige, nicht erlaubte und unbekannte Adressen liefern null; Datenbankfehler
+werden weitergegeben. So kann der Gruppenrouter einen unbekannten Nutzer melden.
+
+Der synchrone Callback mountFeatures(app, {openDb, requireAuth, userDirectory})
+montiert weitere Routen vor Fallback und 404-Behandlung. Sein Rückgabewert steht
+unter runtime.features zur Verfügung, etwa für taskService. Verbindungen, die
+vorher benötigt werden, öffnet der Aufrufer. Konkretes Beispiel und Team-Test:
+[Integration](../auth-integration.md).
 
 HTTP-Datenformat: { data: ... } oder { error: { code, message } }.
 Für schreibende Frontend-Aufrufe frontend/src/api.js verwenden.
+Der Client sendet auch bei DELETE ohne expliziten Body ein JSON-Objekt. Bei 401
+aus geschützten Modulen benachrichtigt er AuthGate. Die geschützte Ansicht wird
+dann entfernt und die erneute Anmeldung angeboten.
 Kommentare sind bis zur Integration echter Aufgabenrechte gesperrt. Ahshans
 Kommentarcode bleibt erhalten. Seine Rechteprüfungen benötigen beim Anschluss
 await; zusätzlich ist der Vertrag Task-ID oder Taskobjekt gemeinsam festzulegen.
@@ -62,6 +74,10 @@ Installation und API-Liste: INSTALL.md. Es gibt noch keinen produktiven Deployme
 Die Migration ist kein allgemeines versioniertes Framework; _migrations aus
 dem Grundgerüst wird bisher nicht als Versionshistorie verwendet.
 Echte Zustellung und Rechteintegration sind noch nicht abgenommen.
+Aufgaben-/Gruppenrechte wurden am 24.09. im gemeinsamen Prüfaufbau getestet;
+Kommentarrechte und endgültige Montage bleiben offen. auth_settings bindet die
+Datenbank an local oder smtp. Beim Wechsel ist eine neue Datenbank erforderlich,
+damit lokal erzeugte Konten und Sitzungen nicht in den echten Betrieb gelangen.
 
 ## KI-Nutzung
 ChatGPT/Codex für Entwurf, Umsetzung, Testentwurf und Dokumentation.

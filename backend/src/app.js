@@ -5,7 +5,7 @@ import { createSessionService } from './modules/auth/sessionService.js';
 import { createAuthRouter, createRequireAuth, protectWrites, asyncRoute } from './modules/auth/authRoutes.js';
 import { AuthError } from './modules/auth/authError.js';
 
-export function createApp({ openDb, config, mailer, now = () => new Date() }) {
+export function createApp({ openDb, config, mailer, now = () => new Date(), mountFeatures = () => ({}) }) {
   const repository = createAuthRepository({ openDb });
   const service = createAuthService({ repository, mailer, ...config, now });
   const sessions = createSessionService({ repository, secure: config.secure, now });
@@ -25,6 +25,10 @@ export function createApp({ openDb, config, mailer, now = () => new Date() }) {
     res.json({ data: { status: 'ok', database: 'connected' } });
   }));
   app.use('/api/auth', createAuthRouter({ service, repository, sessions, now, localMail: config.mailMode === 'local' }));
+  const userDirectory = { findVerifiedByEmail: service.findVerifiedByEmail };
+  // Team-Routen hier einhängen, bevor Fallback und Fehlerbehandlung folgen.
+  const features = mountFeatures(app, { openDb, requireAuth, userDirectory });
+  if (features?.then) throw new TypeError('mountFeatures muss synchron sein. Datenbankverbindungen vorher öffnen.');
   // Ahshans Router bleibt erhalten. Erst mit echten Aufgabenrechten wieder anbinden.
   app.use('/api/tasks/:taskId/comments', requireAuth, (req, res) => {
     res.status(503).json({ error: { code: 'COMMENTS_NOT_READY', message: 'Kommentare werden noch mit den Aufgabenrechten verbunden.' } });
@@ -37,5 +41,5 @@ export function createApp({ openDb, config, mailer, now = () => new Date() }) {
     if (error.type === 'entity.too.large') return res.status(413).json({ error: { code: 'BODY_TOO_LARGE', message: 'Die Anfrage ist zu groß.' } });
     res.status(500).json({ error: { code: 'INTERNAL_SERVER_ERROR', message: 'Etwas ist schiefgelaufen. Bitte versuche es erneut.' } });
   });
-  return { app, repository, requireAuth, userDirectory: { findVerifiedByEmail: service.findVerifiedByEmail } };
+  return { app, repository, requireAuth, userDirectory, features };
 }

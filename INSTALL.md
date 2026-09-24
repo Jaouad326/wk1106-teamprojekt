@@ -1,7 +1,8 @@
 # StudyPrio lokal starten
 
-Stand: 23.09.2026, Auth-Arbeitsbranch. Anmeldung ist lokal testbar;
-Aufgaben, Gruppen und Kommentare sind noch nicht integriert.
+Stand: 24.09.2026, Auth-Arbeitsbranch. Anmeldung ist lokal testbar.
+Eine gemeinsame Aufgaben-/Gruppen-Demo ist unten beschrieben. Die finale
+Integration in main einschließlich Kommentare/Dashboard ist noch offen.
 
 ## Voraussetzungen
 Node.js ab 22.9 und npm, Git. Geprüft unter Node.js 24.19.0.
@@ -53,11 +54,18 @@ In backend/.env MAIL_MODE=smtp setzen sowie SMTP_HOST, SMTP_PORT (587 oder 465),
 SMTP_USER, SMTP_PASS und MAIL_FROM mit den Angaben des Versandkontos ausfüllen.
 ALLOWED_EMAIL_DOMAINS enthält die tatsächlich verwendeten Hochschuldomains,
 durch Kommas getrennt. campus.example vorher entfernen.
-Die erlaubten THM-Domains sind noch mit den Teamadressen abzugleichen.
+Die bereitgestellten Kursmails belegen mnd.thm.de. Weitere Teamdomains bei Bedarf
+ausdrücklich ergänzen; keine automatische Freigabe beliebiger Subdomains.
 Es werden keine Uni-Passwörter der sich anmeldenden Nutzer benötigt.
 
 .env wird nicht committed. Keine Zugangsdaten in Doku, Chat oder Screenshots teilen.
 SMTP erzwingt TLS; der Versandprovider muss den Absender erlauben.
+Für SMTP außerdem eine neue DATABASE_PATH wählen, beispielsweise studyprio-mail.sqlite,
+und npm run migrate erneut ausführen. Der Server lehnt einen Wechsel des Mailmodus
+mit derselben Datenbank ab. Bestehende Testdaten werden dabei nicht gelöscht.
+Mit npm run mail:check im Backend lassen sich TLS-Verbindung und Anmeldung prüfen,
+ohne eine Mail zu senden. Erst ein anschließend angeforderter und empfangener
+Anmeldelink belegt die echte Zustellung.
 Echte Zustellung ist noch zu prüfen. Es gibt keinen stillen Wechsel von SMTP auf Testlinks.
 
 Bei öffentlichem Betrieb: NODE_ENV=production, APP_ORIGIN als HTTPS-Origin,
@@ -89,9 +97,26 @@ frontend/src/api.js setzt die nötigen Header; der Browser setzt Origin selbst.
 Cookies bleiben bei Aufrufen über den Vite-Proxy auf derselben Origin.
 
 ## Bekannte offene Punkte
-Echte SMTP-Zustellung, THM-Domainliste, Aufgaben-/Gruppenintegration und
-Kommentarrechte sind noch offen. Kommentare sind bewusst noch nicht verfügbar.
+Echte SMTP-Zustellung, finale Montage sowie Kommentarrechte sind noch offen.
+Aufgaben-/Gruppenanschluss ist im separaten Prüfaufbau getestet.
 Bei 429 etwas warten: drei Mailanforderungen pro Adresse/15 Minuten,
 30 Anforderungen bzw. Bestätigungsversuche pro IP/15 Minuten.
 Ein anderer Browser-Origin führt bei schreibenden Aufrufen zu 403.
 Bei Startfehler: .env und Migration prüfen; bei Mailfehler: SMTP-Konfiguration.
+
+## Gemeinsame Demo für die Besprechung
+
+Nach Installation der Abhängigkeiten im Root:
+
+```sh
+git fetch origin
+npm run test:team
+npm run demo:team
+```
+
+http://localhost:5175 öffnen, demo@campus.example eingeben und den Link aus
+TEST_LOGIN_LINK im Terminal öffnen. Danach erscheinen Amins Aufgabenansicht und
+die Gruppenliste. Der Prüfaufbau verwendet die festgehaltenen Team-Commits in
+temporären Worktrees und eine neue Testdatenbank. Strg+C räumt beides auf.
+Es erfolgen kein Merge und keine GitHub-Schreiboperation. Details und Grenzen:
+[docs/auth-integration.md](docs/auth-integration.md).

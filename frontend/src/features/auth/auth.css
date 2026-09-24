@@ -1,6 +1,6 @@
-* { box-sizing: border-box; }
+.auth-layout, .auth-layout * { box-sizing: border-box; }
 body { margin: 0; background: #f3f5f7; color: #172936; font-family: system-ui, sans-serif; }
-.auth-layout { max-width: 680px; margin: 48px auto; padding: 0 20px; }
+.auth-layout { max-width: 1000px; margin: 48px auto; padding: 0 20px; }
 .auth-layout header { margin-bottom: 28px; }
 .auth-layout h1 { color: #16634b; margin-bottom: 8px; }
 .auth-layout p { line-height: 1.6; overflow-wrap: anywhere; }

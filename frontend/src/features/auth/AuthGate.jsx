@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { api } from '../../api.js';
+import { api, SESSION_EXPIRED_EVENT } from '../../api.js';
+import { AuthContext } from './AuthContext.js';
 import './auth.css';
 
 // Nur lesen: React StrictMode darf den Link beim zweiten Render nicht verlieren.
@@ -19,6 +20,16 @@ export default function AuthGate({ children }) {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [localMail, setLocalMail] = useState(false);
+
+  useEffect(() => {
+    function expired() {
+      setUser(null);
+      setError('Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.');
+      setMessage('');
+    }
+    window.addEventListener(SESSION_EXPIRED_EVENT, expired);
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, expired);
+  }, []);
 
   useEffect(() => {
     if (window.location.pathname === '/auth/verify') {
@@ -60,7 +71,7 @@ export default function AuthGate({ children }) {
     });
   }
   function logout() {
-    run(async () => {
+    return run(async () => {
       await api('/auth/logout', { method: 'POST', body: {} });
       setUser(null); setToken(''); setEmail('');
       window.history.replaceState(null, '', '/');
@@ -88,7 +99,7 @@ export default function AuthGate({ children }) {
           </> : user ? <>
             <div className="auth-user"><p>Angemeldet als <strong>{user.email}</strong></p>
               <button className="secondary" onClick={logout} disabled={busy}>Abmelden</button></div>
-            {children}
+            <AuthContext.Provider value={{ user, logout }}>{children}</AuthContext.Provider>
           </> : <>
             <h2>Anmelden</h2>
             <p>Du bekommst einen Link an deine Hochschul-E-Mail. Ein Passwort brauchst du nicht.</p>

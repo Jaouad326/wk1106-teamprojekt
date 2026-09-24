@@ -39,18 +39,29 @@ Am 23.09.2026 unter Node.js 24.19.0:
   Migration zweimal, 26 Tests und Frontend-Build erfolgreich.
 - Start über npm run dev im Root, HTML-Fallback und kompletter lokaler
   Login-/Logout-Ablauf per HTTP über den Vite-Proxy erfolgreich.
-- Echter Browsertest noch offen: Der Browser konnte in der Arbeitsumgebung
+- Am 23.09. war der Browsertest noch offen: Der Browser konnte in der Arbeitsumgebung
   nicht gestartet werden (Download-/Laufzeitprobleme). Darstellung und Klickablauf
-  müssen auf einem Teamrechner geprüft werden. Ein Build ersetzt diesen Test nicht.
+  waren deshalb noch ungeprüft. Am 24.09. erfolgreich nachgeholt, siehe unten.
 
 Tests verwenden temporäre SQLite-Dateien und erfundene Adressen unter campus.example.
 SMTP-Adapter ist mit einem Testtransport geprüft, keine echte Zustellung.
 Das ist keine Produktivabnahme.
 
 ## Donnerstag, 24.09.
-Maildomain und Versandkonfiguration bestätigen, echte Zustellung gemeinsam prüfen.
-Aufgaben, Gruppen und Kommentare anbinden; Rechtefälle und Neuinstallation testen.
-Spec und Architektur mit dem Gesamtprojekt abgleichen. Eigenen Code erklären können.
+- mountFeatures für weitere Routen, useAuth für Nutzer/Logout ergänzt.
+- Gruppenverzeichnis behandelt ungültige/nicht erlaubte Adressen als unbekannt.
+- Gemeinsamer API-Client sendet auch leere DELETE-Bodies und meldet Sitzungsablauf.
+- SMTP-Verbindungstest ohne Mailversand; Schutz gegen Übernahme von Testkonten.
+- Domain mnd.thm.de anhand der Empfänger in den bereitgestellten Kursmails belegt.
+- Zwei Team-Tests mit echtem createApp, Amins Aufgaben und Haizams Gruppen bestanden.
+- 29 Auth-/Clienttests bestanden, Frontend-Build erfolgreich.
+- Chromium-Browsertest bestanden: Login, Bestätigung, Nutzerkontext, Gruppenliste,
+  Aufgabe anlegen, Reload, serverseitiges Sitzungsende, erneuter Login, Logout
+  und Ablehnung wiederverwendeter Links. Desktop 1280×950 und Mobil 390×844,
+  kein horizontaler Überlauf und keine JavaScript-Fehler.
+
+Für die Besprechung: [Integration und Demo](auth-integration.md).
+Echte SMTP-Zustellung und menschliche Teamabnahme sind weiterhin offen.
 
 ## Freitag, 25.09.
 Abnahme, Fehlerkorrekturen und Abgabe. Kein künstliches Verteilen fertiger Commits.

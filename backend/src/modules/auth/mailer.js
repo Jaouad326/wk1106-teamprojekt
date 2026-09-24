@@ -13,11 +13,14 @@ export function createMailer(config, { log = console.log, createTransport = node
     connectionTimeout: 10000, greetingTimeout: 10000, socketTimeout: 15000,
     disableFileAccess: true, disableUrlAccess: true
   });
-  return { async sendLoginLink({ email, url }) {
-    const result = await transport.sendMail({
-      from: smtp.from, to: email, subject: 'Dein Anmeldelink für StudyPrio',
-      text: `Hallo!\n\nÖffne diesen Link und bestätige dort deine Anmeldung:\n${url}\n\nDer Link gilt 15 Minuten und nur einmal. Falls du ihn nicht angefordert hast, ignoriere diese Mail.\n\nStudyPrio`
-    });
-    if (!result.accepted?.length || result.rejected?.length) throw new Error('Mail wurde nicht angenommen.');
-  } };
+  return {
+    async verifyConnection() { await transport.verify(); },
+    async sendLoginLink({ email, url }) {
+      const result = await transport.sendMail({
+        from: smtp.from, to: email, subject: 'Dein Anmeldelink für StudyPrio',
+        text: `Hallo!\n\nÖffne diesen Link und bestätige dort deine Anmeldung:\n${url}\n\nDer Link gilt 15 Minuten und nur einmal. Falls du ihn nicht angefordert hast, ignoriere diese Mail.\n\nStudyPrio`
+      });
+      if (!result.accepted?.length || result.rejected?.length) throw new Error('Mail wurde nicht angenommen.');
+    }
+  };
 }

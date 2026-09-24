@@ -14,6 +14,25 @@ export function createAuthRepository({ openDb }) {
   }
 
   return {
+    ensureMailMode(mode) {
+      return withDb(async db => {
+        await db.exec('BEGIN IMMEDIATE');
+        try {
+          const setting = await db.get('SELECT mailMode FROM auth_settings WHERE id = 1');
+          const legacy = !setting && await db.get(
+            'SELECT 1 FROM users UNION ALL SELECT 1 FROM auth_login_tokens LIMIT 1'
+          );
+          if ((setting && setting.mailMode !== mode) || (legacy && mode === 'smtp')) {
+            const error = new Error('Für SMTP eine neue Datenbank verwenden. Lokale Testkonten nicht übernehmen.');
+            error.code = 'AUTH_MAIL_MODE_MISMATCH';
+            throw error;
+          }
+          await db.run('INSERT OR IGNORE INTO auth_settings (id, mailMode) VALUES (1, ?)', [mode]);
+          await db.exec('COMMIT');
+        } catch (error) { await db.exec('ROLLBACK'); throw error; }
+      });
+    },
+
     saveLoginToken({ tokenHash, email, createdAt, expiresAt }) {
       return withDb(db => db.run(
         `INSERT INTO auth_login_tokens (tokenHash, email, createdAt, expiresAt)

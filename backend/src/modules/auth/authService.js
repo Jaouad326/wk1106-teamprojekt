@@ -74,7 +74,14 @@ export function createAuthService({ repository, mailer, allowedDomains, appOrigi
     },
 
     async findVerifiedByEmail(email) {
-      return repository.findVerifiedByEmail(normalizeEmail(email));
+      let normalized;
+      try { normalized = normalizeEmail(email); }
+      catch (error) {
+        // Die Gruppenverwaltung behandelt nicht zugelassene Adressen wie unbekannte Konten.
+        if (error.code === 'INVALID_EMAIL') return null;
+        throw error;
+      }
+      return repository.findVerifiedByEmail(normalized);
     }
   };
 }

@@ -1,6 +1,7 @@
 # UC-01: Anmeldung über Hochschul-E-Mail
 
-Stand: 23.09.2026. Login im lokalen Testmodus umgesetzt; echter Mailversand noch nicht abgenommen.
+Stand: 24.09.2026. Login einschließlich Team-Anschluss im lokalen Testmodus geprüft;
+echter Mailversand noch nicht abgenommen.
 
 ## Ziel
 StudyPrio bestätigt den Zugriff auf eine erlaubte Hochschul-E-Mail-Adresse.
@@ -35,19 +36,24 @@ User: id, email, emailVerifiedAt, createdAt.
 auth_login_tokens: tokenHash, email, createdAt, expiresAt, usedAt.
 auth_sessions: tokenHash, userId, createdAt, expiresAt.
 auth_limits: keyHash, hits, expiresAt.
+auth_settings: id, mailMode (verhindert Übernahme lokaler Testkonten in den SMTP-Betrieb).
 
 Zeitpunkte sind UTC als ISO-Strings; Ratenlimits verwenden Millisekunden.
 Roh-Tokens liegen nicht in der Datenbank. Session-Token werden ausschließlich
 im HttpOnly-Cookie übertragen, nicht in der JSON-Antwort.
 
 ## Offene Integration
-Zugelassene THM-Maildomains müssen anhand der tatsächlich genutzten Teamadressen
-festgelegt werden. Die Beispieldomain campus.example ist nur für lokale Tests.
-SMTP-Zugang und echte Zustellung sind noch offen. Aufgaben, Gruppen und Kommentare
-werden anschließend verbunden. Kommentare liefern bis zur Rechteintegration 503,
-ohne Anmeldung 401.
+Die Empfängeradressen in den bereitgestellten Kursmails belegen mnd.thm.de.
+Weitere Domains müssen für die betreffenden Teamkonten bestätigt werden.
+campus.example ist nur für lokale Tests. SMTP-Zugang und echte Zustellung bleiben offen.
+Aufgaben und Gruppen sind in einem separaten Prüfaufbau mit der gemeinsamen
+App-Fabrik verbunden. Die Montage in main erfolgt mit dem Team. Kommentare liefern
+bis zur Rechteintegration 503, ohne Anmeldung 401.
+
+Bei einer 401-Antwort aus einem geschützten Modul zeigt AuthGate wieder den Login.
+useAuth stellt den eingebetteten Ansichten Nutzer und Logout zur Verfügung.
 
 ## KI-Nutzung
-ChatGPT/Codex am 22.–23.09.2026: Entwurf, Code, Tests und Dokumentation.
+ChatGPT/Codex am 22.–24.09.2026: Entwurf, Code, Tests und Dokumentation.
 Automatisierte Prüfergebnisse stehen in docs/auth-handoff.md.
 Menschliche Prüfung und Erklärung durch Jaouad stehen noch aus.

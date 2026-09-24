@@ -6,6 +6,7 @@ import { createApp } from './app.js';
 try {
   const config = readAuthConfig();
   const { app, repository } = createApp({ openDb: getDbConnection, config, mailer: createMailer(config) });
+  await repository.ensureMailMode(config.mailMode);
   await repository.cleanup(new Date());
   const cleanup = setInterval(() => repository.cleanup(new Date()).catch(() => {
     console.error('Abgelaufene Anmeldedaten konnten nicht bereinigt werden.');
@@ -20,7 +21,9 @@ try {
     clearInterval(cleanup);
     server.close();
   });
-} catch {
-  console.error('Start fehlgeschlagen. Bitte backend/.env prüfen und npm run migrate ausführen.');
+} catch (error) {
+  console.error(error.code === 'AUTH_MAIL_MODE_MISMATCH'
+    ? 'Start abgebrochen: Für echten Mailversand eine neue DATABASE_PATH wählen und migrieren. Testkonten werden nicht übernommen.'
+    : 'Start fehlgeschlagen. Bitte backend/.env prüfen und npm run migrate ausführen.');
   process.exitCode = 1;
 }

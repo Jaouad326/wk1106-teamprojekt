@@ -28,5 +28,9 @@ export async function up(db) {
       hits INTEGER NOT NULL,
       expiresAt INTEGER NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS auth_settings (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      mailMode TEXT NOT NULL CHECK (mailMode IN ('local', 'smtp'))
+    );
   `);
 }

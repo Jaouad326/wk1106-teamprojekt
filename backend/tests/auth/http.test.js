@@ -12,7 +12,7 @@ import { SESSION_MS } from '../../src/modules/auth/sessionService.js';
 import { readAuthConfig } from '../../src/config/authConfig.js';
 import { createMailer } from '../../src/modules/auth/mailer.js';
 
-async function fixture(t, { secure = false, failMail = false } = {}) {
+async function fixture(t, { secure = false, failMail = false, mountFeatures } = {}) {
   const directory = await mkdtemp(join(tmpdir(), 'studyprio-http-'));
   const openDb = async () => {
     const db = await open({ filename: join(directory, 'test.sqlite'), driver: sqlite3.Database });
@@ -25,7 +25,7 @@ async function fixture(t, { secure = false, failMail = false } = {}) {
   let time = new Date('2026-09-23T12:00:00.000Z');
   const config = { appOrigin: secure ? 'https://study.example' : 'http://localhost:5173',
     secure, allowedDomains: ['campus.example'], mailMode: 'local' };
-  const options = { openDb, config, now: () => new Date(time), mailer: {
+  const options = { openDb, config, mountFeatures, now: () => new Date(time), mailer: {
     async sendLoginLink(message) { messages.push(message); if (failMail) throw new Error('SMTP PASSWORD'); }
   } };
   const servers = [];
@@ -60,6 +60,7 @@ async function fixture(t, { secure = false, failMail = false } = {}) {
     return response.headers.get('set-cookie').split(';')[0];
   }
   return { request, messages, token, login, openDb,
+    repository: current.repository,
     advance(ms) { time = new Date(time.getTime() + ms); },
     async restart() { url = await start(); },
     cleanup() { return current.repository.cleanup(time); }
@@ -216,4 +217,37 @@ test('SMTP adapter uses TLS and reports rejected mail without real delivery', as
   assert.equal(options.secure, false);
   assert.equal(message.to, 'a@campus.example');
   assert.match(message.text, /15 Minuten/);
+});
+
+test('Team route hook runs before fallback and shares session middleware/user directory', async t => {
+  let dependencies;
+  const f = await fixture(t, { mountFeatures(app, shared) {
+    dependencies = shared;
+    app.get('/api/team-check', shared.requireAuth, (req, res) => res.json({ data: req.user.id }));
+    return { mounted: true };
+  } });
+  assert.equal((await f.request('/api/team-check')).status, 401);
+  const cookie = await f.login();
+  const response = await f.request('/api/team-check', { cookie });
+  assert.equal(response.status, 200);
+  const user = await dependencies.userDirectory.findVerifiedByEmail(' A@CAMPUS.EXAMPLE ');
+  assert.equal(user.id, response.data.data);
+  for (const email of ['wrong', 'a@not-allowed.example', null]) {
+    assert.equal(await dependencies.userDirectory.findVerifiedByEmail(email), null);
+  }
+});
+
+test('Local test database cannot be promoted to SMTP; legacy users also block adoption', async t => {
+  const f = await fixture(t);
+  await f.repository.ensureMailMode('local');
+  await f.repository.ensureMailMode('local');
+  await assert.rejects(f.repository.ensureMailMode('smtp'), { code: 'AUTH_MAIL_MODE_MISMATCH' });
+  const old = await fixture(t);
+  await old.login();
+  await assert.rejects(old.repository.ensureMailMode('smtp'), { code: 'AUTH_MAIL_MODE_MISMATCH' });
+  await old.repository.ensureMailMode('local');
+  const clean = await fixture(t);
+  await clean.repository.ensureMailMode('smtp');
+  await clean.repository.ensureMailMode('smtp');
+  await assert.rejects(clean.repository.ensureMailMode('local'), { code: 'AUTH_MAIL_MODE_MISMATCH' });
 });
