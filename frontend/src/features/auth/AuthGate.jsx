@@ -83,10 +83,25 @@ export default function AuthGate({ children }) {
   }
 
   return <main className="auth-layout">
-    <header><h1>StudyPrio</h1><p>Dein Studium. Deine nächsten Aufgaben.</p></header>
+    <section className="auth-intro" aria-label="StudyPrio">
+      <header className="brand-lockup">
+        <span className="brand-mark" aria-hidden="true">S</span>
+        <span>StudyPrio</span>
+      </header>
+      <div className="intro-copy">
+        <p className="eyebrow">STUDIUM ORGANISIEREN</p>
+        <h1>Deine Aufgaben.<br /><span>Dein nächster Schritt.</span></h1>
+        <p className="intro-text">Planung · Ordnung · Kommunikation</p>
+      </div>
+      <div className="task-visual" aria-hidden="true">
+        <div className="task-visual-heading"><span></span><span></span><span></span></div>
+        <div className="task-row task-row--active"><i></i><b></b><small></small></div>
+        <div className="task-row"><i></i><b></b><small></small></div>
+        <div className="task-row task-row--short"><i></i><b></b><small></small></div>
+      </div>
+    </section>
     <section className="auth-card" aria-busy={busy || loading}>
       {loading ? <p role="status">Anmeldung wird geprüft …</p> : <>
-        {localMail && <p className="auth-note">Lokaler Testmodus – es werden keine E-Mails versendet. Er bestätigt keinen echten Zugriff auf ein Postfach.</p>}
         {error && <p role="alert" className="auth-error">{error}</p>}
         {message && <p role="status" className="auth-message">{message}</p>}
         {loadFailed ? <button onClick={() => setRetry(value => value + 1)}>Erneut versuchen</button>
@@ -101,15 +116,16 @@ export default function AuthGate({ children }) {
               <button className="secondary" onClick={logout} disabled={busy}>Abmelden</button></div>
             <AuthContext.Provider value={{ user, logout }}>{children}</AuthContext.Provider>
           </> : <>
-            <h2>Anmelden</h2>
-            <p>Du bekommst einen Link an deine Hochschul-E-Mail. Ein Passwort brauchst du nicht.</p>
+            <p className="form-eyebrow">DEIN KONTO</p>
+            <h2>Willkommen zurück</h2>
+            <p>Melde dich an, um deine Aufgaben und Prioritäten im Blick zu behalten.</p>
             <form onSubmit={requestLink}>
               <label htmlFor="login-email">Hochschul-E-Mail</label>
               <input id="login-email" type="email" autoComplete="email" required maxLength={254}
                 value={email} onChange={event => setEmail(event.target.value)} disabled={busy} />
               <button type="submit" disabled={busy}>{busy ? 'Wird angefordert …' : 'Anmeldelink anfordern'}</button>
             </form>
-            <p className="auth-hint">Der Link gilt 15 Minuten. Dies ist kein offizieller THM-Login.</p>
+            <p className="auth-hint">Du erhältst einen sicheren Anmeldelink per E-Mail. Kein Passwort nötig.</p>
           </>}
       </>}
     </section>
