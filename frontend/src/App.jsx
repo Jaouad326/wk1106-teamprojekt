@@ -1,10 +1,10 @@
 import AuthGate from './features/auth/AuthGate.jsx';
+import DashboardPage from './features/dashboard/DashboardPage.jsx';
 
 function App() {
   return (
     <AuthGate>
-      <h2>Willkommen bei StudyPrio</h2>
-      <p>Du bist angemeldet. Die Aufgaben- und Gruppenansicht wird als Nächstes verbunden.</p>
+      <DashboardPage />
     </AuthGate>
   );
 }

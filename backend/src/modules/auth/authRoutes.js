@@ -20,9 +20,10 @@ export function createRequireAuth(sessions) {
 
 // Verhindert fremde Formulare und Cross-Origin-Aufrufe aller schreibenden APIs.
 export function protectWrites(appOrigin) {
+  const allowedOrigins = new Set(Array.isArray(appOrigin) ? appOrigin : [appOrigin]);
   return (req, res, next) => {
     if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
-    if (req.get('origin') !== appOrigin || req.get('x-studyprio-request') !== '1') {
+    if (!allowedOrigins.has(req.get('origin')) || req.get('x-studyprio-request') !== '1') {
       return next(new AuthError('FORBIDDEN', 'Diese Anfrage ist nicht erlaubt.', 403));
     }
     if (!req.is('application/json')) {

@@ -1,0 +1,47 @@
+.dashboard-page {
+  min-height: 100svh;
+  padding: 28px clamp(22px, 5vw, 72px) 56px;
+  color: #202a35;
+  background: #f4f6f5;
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #dce5e0;
+}
+
+.dashboard-brand { display: flex; align-items: center; gap: 10px; font-weight: 720; letter-spacing: -.025em; }
+.dashboard-brand .brand-mark { display: grid; width: 32px; height: 32px; place-items: center; color: #eef5f1; background: #2c5345; border-radius: 9px; font-family: Georgia, serif; font-size: 1rem; }
+.dashboard-account { display: flex; align-items: center; gap: 16px; color: #718078; font-size: .82rem; }
+.dashboard-account button { padding: 8px 12px; color: #2c5345; background: transparent; border: 1px solid #afc1b8; border-radius: 7px; cursor: pointer; font-size: .8rem; font-weight: 650; }
+.dashboard-account button:hover { color: #fff; background: #2c5345; }
+
+.dashboard-welcome { max-width: 1120px; margin: clamp(54px, 9vw, 110px) auto 42px; }
+.dashboard-eyebrow { margin: 0 0 14px; color: #668276; font-size: .68rem; font-weight: 800; letter-spacing: .17em; }
+.dashboard-welcome h1 { margin: 0; color: #202a35; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.5rem, 5vw, 4.7rem); font-weight: 400; letter-spacing: -.06em; line-height: .98; }
+.dashboard-welcome > p:last-child { max-width: 470px; margin: 20px 0 0; color: #6d7974; line-height: 1.6; }
+
+.dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 1120px; margin: 0 auto; }
+.dashboard-panel { min-height: 190px; padding: 24px; background: #fff; border: 1px solid #e1e6e3; border-radius: 12px; box-shadow: 0 12px 30px rgba(32, 53, 45, .05); }
+.panel-label { margin: 0 0 38px; color: #718078; font-size: .78rem; font-weight: 700; }
+.dashboard-panel strong { display: block; color: #2c5345; font-size: 1.35rem; font-weight: 650; letter-spacing: -.03em; }
+.dashboard-panel > p:last-child { margin: 10px 0 0; color: #8a9891; font-size: .84rem; line-height: 1.5; }
+
+.dashboard-next { display: flex; align-items: center; justify-content: space-between; max-width: 1120px; margin: 14px auto 0; padding: 28px 30px; color: #eef5f1; background: #2c5345; border-radius: 12px; }
+.dashboard-next .dashboard-eyebrow { color: #b9d0c3; }
+.dashboard-next h2 { margin: 0; color: #fff; font-family: Georgia, "Times New Roman", serif; font-size: 1.65rem; font-weight: 400; letter-spacing: -.04em; }
+.dashboard-next p:last-child { max-width: 520px; margin: 10px 0 0; color: #d0ded7; font-size: .88rem; line-height: 1.55; }
+.dashboard-mark { display: grid; width: 48px; height: 48px; flex: 0 0 auto; place-items: center; color: #2c5345; background: #dcebe2; border-radius: 50%; font-size: 1.7rem; font-weight: 300; }
+
+@media (max-width: 720px) {
+  .dashboard-account > span { display: none; }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .dashboard-panel { min-height: 140px; }
+  .panel-label { margin-bottom: 24px; }
+  .dashboard-next { align-items: flex-start; gap: 24px; }
+}

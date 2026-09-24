@@ -111,8 +111,6 @@ export default function AuthGate({ children }) {
             <button onClick={confirmLink} disabled={busy}>{busy ? 'Wird geprüft …' : 'Anmeldung bestätigen'}</button>
             <button className="secondary" onClick={discardLink} disabled={busy}>Zurück zur Anmeldung</button>
           </> : user ? <>
-            <div className="auth-user"><p>Angemeldet als <strong>{user.email}</strong></p>
-              <button className="secondary" onClick={logout} disabled={busy}>Abmelden</button></div>
             <AuthContext.Provider value={{ user, logout }}>{children}</AuthContext.Provider>
           </> : <>
             <p className="form-eyebrow">DEIN KONTO</p>

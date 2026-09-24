@@ -4,6 +4,8 @@ import { createAuthService } from './modules/auth/authService.js';
 import { createSessionService } from './modules/auth/sessionService.js';
 import { createAuthRouter, createRequireAuth, protectWrites, asyncRoute } from './modules/auth/authRoutes.js';
 import { AuthError } from './modules/auth/authError.js';
+import { createGroupRouter } from './modules/groups/groupRoutes.js';
+import { createGroupService } from './modules/groups/groupService.js';
 
 export function createApp({ openDb, config, mailer, now = () => new Date(), mountFeatures = () => ({}) }) {
   const repository = createAuthRepository({ openDb });
@@ -17,7 +19,7 @@ export function createApp({ openDb, config, mailer, now = () => new Date(), moun
     res.set({ 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' });
     next();
   });
-  app.use('/api', protectWrites(config.appOrigin));
+  app.use('/api', protectWrites(config.allowedOrigins ?? config.appOrigin));
   app.use(express.json({ limit: '8kb' }));
   app.get('/api/health', asyncRoute(async (req, res) => {
     const db = await openDb();
@@ -26,6 +28,8 @@ export function createApp({ openDb, config, mailer, now = () => new Date(), moun
   }));
   app.use('/api/auth', createAuthRouter({ service, repository, sessions, now, localMail: config.mailMode === 'local' }));
   const userDirectory = { findVerifiedByEmail: service.findVerifiedByEmail };
+  const groupService = createGroupService({ openDb, userDirectory });
+  app.use('/api/groups', createGroupRouter({ groupService, requireAuth }));
   // Team-Routen hier einhängen, bevor Fallback und Fehlerbehandlung folgen.
   const features = mountFeatures(app, { openDb, requireAuth, userDirectory });
   if (features?.then) throw new TypeError('mountFeatures muss synchron sein. Datenbankverbindungen vorher öffnen.');

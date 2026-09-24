@@ -23,7 +23,11 @@ export function readAuthConfig(env = process.env) {
     throw new Error('SMTP_HOST, SMTP_USER, SMTP_PASS, MAIL_FROM und Port 465/587 werden benötigt.');
   }
   return {
-    appOrigin: origin.origin, allowedDomains, mailMode, secure: origin.protocol === 'https:', port,
+    appOrigin: origin.origin,
+    allowedOrigins: publicLocalMail
+      ? [origin.origin, 'http://localhost:5173', 'http://127.0.0.1:5173']
+      : [origin.origin],
+    allowedDomains, mailMode, secure: origin.protocol === 'https:', port,
     // Lokale Testlinks dürfen nur auf dem eigenen Rechner zugänglich sein.
     host: mailMode === 'local' ? '127.0.0.1' : (env.HOST || '127.0.0.1'),
     smtp: { host: env.SMTP_HOST, port: smtpPort, user: env.SMTP_USER, pass: env.SMTP_PASS, from: env.MAIL_FROM }
