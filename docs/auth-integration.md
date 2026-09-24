@@ -1,6 +1,7 @@
 # Anmeldung – Übergabe für die Besprechung am 24.09.
 
 ## Was bereit ist
+
 Login per Einmal-Link, SQLite-Sitzung, Logout, requireAuth, Nutzerverzeichnis,
 Login-Oberfläche, API-Client und Nutzerkontext. 29 Auth-/Clienttests und zwei
 Team-Tests bestanden. Der Browserablauf mit echten Aufgaben-/Gruppenmodulen
@@ -12,7 +13,7 @@ ist auf Desktop und Mobil geprüft. Mailtransport ist im Prüfaufbau simuliert.
 |---|---|---|
 | Anmeldung / Jaouad | aktueller Auth-Arbeitsstand vom 24.09. | createApp, requireAuth, userDirectory, AuthGate, useAuth |
 | Aufgaben / Amin | work/amin-tasks, a552cdb | createTaskModule und TasksWorkspace geprüft |
-| Gruppen / Haizam | work/haizam-groups, 78c78b3 | Gruppen-API und AccessService geprüft |
+| Gruppen / Haizam | work/haizam-groups, 8e226e8 | Gruppen-API und AccessService geprüft; neue Gruppenoberfläche braucht API-Anschluss |
 | Kommentare / Ahshan | main, 7b45b5d | Schema vorhanden; Router/UI noch anzuschließen |
 | Priorisierung / Bassim | beim Abruf noch kein veröffentlichter Branch vorhanden | später taskService aus features verwenden |
 
@@ -100,9 +101,38 @@ Dies ersetzt keine serverseitige Prüfung: Alle geschützten Routen nutzen requi
   prüfen; Frontend-POST über api() senden. Kommentare sind bis dahin gesperrt.
 - Haizams übrige Fehlerfälle und Gruppenoberfläche prüfen. Sein aktueller Router
   gibt bei unbekannten Fehlern interne error.message zurück; das vor Freigabe ändern.
+- Seine Gruppenoberfläche verwendet derzeit direkt fetch ohne Auth-Header. Die
+  gemeinsame api()-Funktion wie unten anbinden, sonst scheitern Schreibvorgänge mit 403.
 - Bassims Priorisierung/Dashboard anschließen, finalen Build und Gesamtablauf prüfen.
 - Gemeinsame Spec/Architektur vervollständigen und Review durch alle. Kein bestandener
   Gesamtabnahmetest und kein Produktionsbetrieb wird hier behauptet.
+
+## Konkreter Anschluss der neuen Gruppenoberfläche
+
+Nach Zusammenführung kann frontend/src/features/groups/groupsApi.js seine
+bestehenden Funktionsnamen behalten und den gemeinsamen Client verwenden:
+
+```js
+import { api } from '../../api.js';
+
+const groupPath = id => `/groups/${encodeURIComponent(id)}`;
+export const getGroups = () => api('/groups');
+export const createGroup = name => api('/groups', { method: 'POST', body: { name } });
+export const getGroup = id => api(groupPath(id));
+export const getGroupMembers = id => api(`${groupPath(id)}/members`);
+export const addGroupMember = (id, email) => api(`${groupPath(id)}/members`, {
+  method: 'POST', body: { email }
+});
+export const removeGroupMember = (id, userId) => api(
+  `${groupPath(id)}/members/${encodeURIComponent(userId)}`, { method: 'DELETE' }
+);
+```
+
+Damit kommen Schreibschutz-Header, JSON-Body, Cookie-Verhalten und 401-Behandlung
+aus einer Stelle. Dies ist die vorbereitete Änderung für Haizams Oberfläche;
+sie ist kein bereits durchgeführter Merge seines Arbeitsbranches.
+
+Eigener Abschluss, SMTP-Prüfung und Code-Erklärung: [auth-abschluss.md](auth-abschluss.md).
 
 ## Browserprüfung wiederholen (optional)
 

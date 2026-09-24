@@ -9,7 +9,7 @@ const exec = promisify(execFile);
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 const temp = await mkdtemp(path.join(tmpdir(), 'studyprio-meeting-'));
 const checkouts = [];
-const targets = [ ['tasks', 'a552cdb'], ['groups', '78c78b3'] ];
+const targets = [ ['tasks', 'a552cdb'], ['groups', '8e226e8'] ];
 let child;
 try {
   for (const [name, commit] of targets) {

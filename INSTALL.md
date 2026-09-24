@@ -5,11 +5,13 @@ Eine gemeinsame Aufgaben-/Gruppen-Demo ist unten beschrieben. Die finale
 Integration in main einschließlich Kommentare/Dashboard ist noch offen.
 
 ## Voraussetzungen
+
 Node.js ab 22.9 und npm, Git. Geprüft unter Node.js 24.19.0.
 Falls sqlite3 kein fertiges Paket für das Betriebssystem liefert, werden
 Python und die C/C++-Buildwerkzeuge der Plattform benötigt.
 
 ## Installation
+
 Repository klonen, dann den Auth-Branch auswählen:
 
 ```sh
@@ -38,6 +40,7 @@ Backend: http://127.0.0.1:3000/api/health.
 Beide Ports müssen frei sein; Vite wechselt nicht automatisch auf einen anderen Port.
 
 ## Lokalen Login ausprobieren
+
 1. student@campus.example im Formular eingeben.
 2. „Anmeldelink anfordern“ klicken.
 3. Den Link aus dem Backend-Terminal im Browser öffnen.
@@ -50,6 +53,7 @@ Der Link wird nach dem Öffnen aus der Adressleiste entfernt; bei Neuladen der
 Bestätigungsseite den ursprünglichen Link aus dem Terminal erneut öffnen.
 
 ## Echter Mailversand
+
 In backend/.env MAIL_MODE=smtp setzen sowie SMTP_HOST, SMTP_PORT (587 oder 465),
 SMTP_USER, SMTP_PASS und MAIL_FROM mit den Angaben des Versandkontos ausfüllen.
 ALLOWED_EMAIL_DOMAINS enthält die tatsächlich verwendeten Hochschuldomains,
@@ -75,13 +79,19 @@ npm run build im Frontend erstellt nur die Webdateien; das Express-Backend
 muss zusätzlich laufen. vite preview ist keine fertige Produktivbereitstellung.
 
 ## Prüfen
-Im Backend: npm test.
-Im Frontend: npm run build.
+
+Im Root: npm run check:auth (Backendtests und Frontend-Build).
+Einzeln: im Backend npm test, im Frontend npm run build.
+Zusätzlich im Backend: npm run test:mail. Dafür OpenSSL im PATH und die
+Entwicklungsabhängigkeiten installieren. Die Tests starten einen lokalen SMTP-Server
+mit temporärem Zertifikat; kein Anbieterzugang nötig, keine externen Empfänger.
+STARTTLS, direktes TLS und abgewiesene Verbindungen werden damit geprüft.
 npm run migrate im Backend ist wiederholbar und löscht keine Nutzer.
 SQLite-Datei: backend/studyprio.sqlite; mit DATABASE_PATH anpassbar.
 Zum Testen einen separaten Datenbankpfad verwenden, keine Teamdatenbank löschen.
 
 ## API für die Integration
+
 | Methode | Pfad | Zweck |
 |---|---|---|
 | GET | /api/auth/config | Kennzeichnung lokaler Testmodus |
@@ -97,6 +107,7 @@ frontend/src/api.js setzt die nötigen Header; der Browser setzt Origin selbst.
 Cookies bleiben bei Aufrufen über den Vite-Proxy auf derselben Origin.
 
 ## Bekannte offene Punkte
+
 Echte SMTP-Zustellung, finale Montage sowie Kommentarrechte sind noch offen.
 Aufgaben-/Gruppenanschluss ist im separaten Prüfaufbau getestet.
 Bei 429 etwas warten: drei Mailanforderungen pro Adresse/15 Minuten,
@@ -120,3 +131,6 @@ die Gruppenliste. Der Prüfaufbau verwendet die festgehaltenen Team-Commits in
 temporären Worktrees und eine neue Testdatenbank. Strg+C räumt beides auf.
 Es erfolgen kein Merge und keine GitHub-Schreiboperation. Details und Grenzen:
 [docs/auth-integration.md](docs/auth-integration.md).
+
+Abschlussprüfung und Erklärung des Auth-Codes:
+[docs/auth-abschluss.md](docs/auth-abschluss.md).

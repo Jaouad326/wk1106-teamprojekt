@@ -4,10 +4,12 @@ Arbeitsbranch: work/jaouad-auth. Noch nicht in main integriert.
 Basis des gemeinsamen Codes: main 7b45b5d.
 
 ## Dienstag, 22.09.
+
 Anmeldelinks, Mailprüfung, Kontoanlage und 13 Tests.
 Commit: 470dee3e90ae4bbe37950b7e4fec39ca17da1c26.
 
 ## Mittwoch, 23.09.
+
 Sitzungen in SQLite, requireAuth, Logout, HTTP-Routen, Ratenlimits,
 Schutz schreibender Anfragen, Login-Oberfläche und konfigurierbarer Mailadapter.
 Die Sitzung übersteht Neuladen und Backend-Neustart. Link und Sitzung werden
@@ -19,6 +21,7 @@ echte Zustellung ist mangels konfiguriertem Mailkonto noch nicht getestet.
 Keine echten Mails wurden versendet.
 
 ## Gemeinsame Dateien und Anschluss
+
 server.js enthält keinen festen Testnutzer und keine pauschal erlaubten Rechte mehr.
 Der bisherige Kommentarrouter bleibt unverändert in seinem Modul, ist aber noch
 nicht wieder angebunden. Stattdessen: 401 ohne Anmeldung, 503 bis zur Rechteintegration.
@@ -32,6 +35,7 @@ mit Ahshan und der Aufgaben-/Gruppenverwaltung abgestimmt werden.
 Globale Startbefehle lesen jetzt backend/.env ein. Setup siehe INSTALL.md.
 
 ## Prüfung
+
 Am 23.09.2026 unter Node.js 24.19.0:
 - Backend npm test: 26 Tests bestanden, keine fehlgeschlagen oder übersprungen.
 - Frontend npm run build: erfolgreich.
@@ -48,6 +52,7 @@ SMTP-Adapter ist mit einem Testtransport geprüft, keine echte Zustellung.
 Das ist keine Produktivabnahme.
 
 ## Donnerstag, 24.09.
+
 - mountFeatures für weitere Routen, useAuth für Nutzer/Logout ergänzt.
 - Gruppenverzeichnis behandelt ungültige/nicht erlaubte Adressen als unbekannt.
 - Gemeinsamer API-Client sendet auch leere DELETE-Bodies und meldet Sitzungsablauf.
@@ -64,10 +69,16 @@ Für die Besprechung: [Integration und Demo](auth-integration.md).
 Echte SMTP-Zustellung und menschliche Teamabnahme sind weiterhin offen.
 
 ## Freitag, 25.09.
-Abnahme, Fehlerkorrekturen und Abgabe. Kein künstliches Verteilen fertiger Commits.
+
+Die technische Auth-Abschlussprüfung wird auf Nutzerwunsch am 24.09. vorgezogen:
+[Prüfbericht, Code-Erklärung und Abgabevorbereitung](auth-abschluss.md).
+Zusätzlich: echter lokaler SMTP-Transport mit TLS und negativen Verbindungsfällen,
+erweiterte Spec/arc42-Dokumentation und ADRs für Sitzungen sowie Mailmodi.
+Kein künstliches Verteilen fertiger Commits.
 Finalen Tag und Abgabe-Mail erst nach Teamprüfung erstellen.
 
 ## Zum Erklären
+
 1. Wieso speichern wir nur Tokenhashes?
 2. Warum müssen Linkverbrauch und Sitzungserstellung gemeinsam gespeichert werden?
 3. Was passiert beim Logout und nach sieben Tagen?
