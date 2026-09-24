@@ -137,3 +137,7 @@ Es erfolgen kein Merge und keine GitHub-Schreiboperation. Details und Grenzen:
 
 Abschlussprüfung und Erklärung des Auth-Codes:
 [docs/auth-abschluss.md](docs/auth-abschluss.md).
+
+## Gemeinsamer Test über eine HTTPS-Adresse
+
+Für einen Test mit mehreren Rechnern siehe [gemeinsamer-test.md](docs/gemeinsamer-test.md). Mit `SERVE_FRONTEND=true` liefert das Backend den vorher gebauten Frontend-Stand aus. Zugangsdaten und SQLite-Datei bleiben auf dem Rechner, auf dem das Backend läuft.

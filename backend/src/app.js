@@ -5,7 +5,7 @@ import { createSessionService } from './modules/auth/sessionService.js';
 import { createAuthRouter, createRequireAuth, protectWrites, asyncRoute } from './modules/auth/authRoutes.js';
 import { AuthError } from './modules/auth/authError.js';
 
-export function createApp({ openDb, config, mailer, now = () => new Date(), mountFeatures = () => ({}) }) {
+export function createApp({ openDb, config, mailer, now = () => new Date(), mountFeatures = () => ({}), frontendDirectory }) {
   const repository = createAuthRepository({ openDb });
   const service = createAuthService({ repository, mailer, ...config, now });
   const sessions = createSessionService({ repository, secure: config.secure, now });
@@ -34,6 +34,15 @@ export function createApp({ openDb, config, mailer, now = () => new Date(), moun
     res.status(503).json({ error: { code: 'COMMENTS_NOT_READY', message: 'Kommentare werden noch mit den Aufgabenrechten verbunden.' } });
   });
   app.use('/api', (req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Nicht gefunden.' } }));
+  // Im gemeinsamen Test kommen Oberfläche und API von derselben Adresse.
+  // Nur den fertigen Build ausliefern, niemals Projektdateien oder die Datenbank.
+  if (frontendDirectory) {
+    app.use(express.static(frontendDirectory, { index: false, dotfiles: 'deny' }));
+    app.get(['/', '/auth/verify'], (req, res) => {
+      res.set({ 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' });
+      res.sendFile('index.html', { root: frontendDirectory });
+    });
+  }
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
     if (error instanceof AuthError) return res.status(error.status).json({ error: { code: error.code, message: error.message } });
