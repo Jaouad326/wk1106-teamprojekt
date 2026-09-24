@@ -10,8 +10,10 @@ export function readAuthConfig(env = process.env) {
   const allowedDomains = (env.ALLOWED_EMAIL_DOMAINS || '').split(',').map(s => s.trim()).filter(Boolean);
   if (!allowedDomains.length) throw new Error('ALLOWED_EMAIL_DOMAINS fehlt. Siehe backend/.env.example.');
   const mailMode = env.MAIL_MODE;
-  if (!['local', 'smtp'].includes(mailMode) || (mailMode === 'local' && (production || !local))) {
-    throw new Error('MAIL_MODE muss smtp sein; local ist nur für lokale Entwicklung erlaubt.');
+  const publicLocalMail = env.ALLOW_PUBLIC_LOCAL_MAIL === 'true';
+  if (!['local', 'smtp'].includes(mailMode) ||
+      (mailMode === 'local' && (production || (!local && !publicLocalMail)))) {
+    throw new Error('MAIL_MODE muss smtp sein; local ist nur lokal oder für eine ausdrücklich aktivierte Demo erlaubt.');
   }
   const port = Number(env.PORT || 3000);
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Ungültiger PORT.');
