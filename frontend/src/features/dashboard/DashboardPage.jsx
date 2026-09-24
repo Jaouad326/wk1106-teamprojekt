@@ -4,12 +4,41 @@ import GroupsPage from '../groups/GroupsPage.jsx';
 import TasksPage from '../tasks/TasksPage.jsx';
 import './dashboard.css';
 
+const PRIORITY_DOTS = { 'Sehr hoch': '🔴', 'Hoch': '🟠', 'Mittel': '🟡', 'Niedrig': '⚪' };
+const STATUS_ACTIVITY_LABELS = { open: 'angelegt', in_progress: 'in Arbeit', done: 'erledigt' };
+
+// Kurze, menschenlesbare Frist statt eines exakten Datums, passend zum Übersichts-Mockup.
+function formatDueLabel(dueAt) {
+  const due = new Date(dueAt);
+  const now = new Date();
+  const days = Math.round((new Date(due.toDateString()) - new Date(now.toDateString())) / 86_400_000);
+  if (days < 0) return 'überfällig';
+  if (days === 0) return 'heute';
+  if (days === 1) return 'morgen';
+  if (days < 7) return due.toLocaleDateString('de-DE', { weekday: 'long' });
+  return 'nächste Woche';
+}
+
+// Grobe, aber ehrliche Zeitangabe relativ zu jetzt statt eines exakten Zeitstempels.
+function formatRelativeTime(isoString) {
+  const diffMinutes = Math.round((Date.now() - new Date(isoString).getTime()) / 60_000);
+  if (diffMinutes < 1) return 'gerade eben';
+  if (diffMinutes < 60) return `vor ${diffMinutes} Min.`;
+  const diffHours = Math.round(diffMinutes / 60);
+  if (diffHours < 24) return `vor ${diffHours} Std.`;
+  const diffDays = Math.round(diffHours / 24);
+  return `vor ${diffDays} Tag${diffDays === 1 ? '' : 'en'}`;
+}
+
 export default function DashboardPage() {
   const { user, logout } = useAuth();
   const [taskSummary, setTaskSummary] = useState(null);
-  const [groupCount, setGroupCount] = useState(null);
+  const [groups, setGroups] = useState(null);
   const handleTaskSummary = useCallback(summary => setTaskSummary(summary), []);
-  const handleGroups = useCallback(groups => setGroupCount(groups.length), []);
+  const handleGroups = useCallback(list => setGroups(list), []);
+  const groupCount = groups === null ? null : groups.length;
+  const progressPercent = taskSummary && taskSummary.total > 0
+    ? Math.round((taskSummary.done / taskSummary.total) * 100) : 0;
 
   const overviewItems = [
     {
@@ -20,9 +49,14 @@ export default function DashboardPage() {
         : `${taskSummary.total} insgesamt, davon ${taskSummary.overdue} überfällig.`
     },
     {
-      label: 'Nächste Aufgabe',
-      value: taskSummary?.next ? taskSummary.next.title : '—',
-      detail: taskSummary?.next ? `Priorität: ${taskSummary.next.priority.label}` : 'Keine offene Aufgabe vorhanden.'
+      label: 'Heute fällig',
+      value: taskSummary === null ? '…' : String(taskSummary.dueToday),
+      detail: 'Aufgaben mit Frist heute.'
+    },
+    {
+      label: 'Erledigt',
+      value: taskSummary === null ? '…' : String(taskSummary.done),
+      detail: 'Bereits abgeschlossene Aufgaben.'
     },
     {
       label: 'Gruppen',
@@ -53,6 +87,81 @@ export default function DashboardPage() {
         <section className="dashboard-overview" aria-label="StudyPrio Übersicht">
           {overviewItems.map((item) => <div className="dashboard-overview-row" key={item.label}><span>{item.label}</span><strong>{item.value}</strong><p>{item.detail}</p></div>)}
         </section>
+
+        <section className="dashboard-progress" aria-label="Gesamtfortschritt">
+          <div className="dashboard-progress-heading">
+            <p className="dashboard-eyebrow">GESAMTFORTSCHRITT</p>
+            <strong>{taskSummary === null ? '…' : `${progressPercent}%`}</strong>
+          </div>
+          <div className="progress-track" role="progressbar" aria-valuenow={progressPercent} aria-valuemin={0} aria-valuemax={100}>
+            <div className="progress-fill" style={{ width: `${progressPercent}%` }} />
+          </div>
+          <p className="dashboard-progress-detail">
+            {taskSummary === null ? 'Wird geladen ...'
+              : taskSummary.total === 0 ? 'Noch keine Aufgaben zur Auswertung vorhanden.'
+              : `${taskSummary.done} von ${taskSummary.total} Aufgaben erledigt.`}
+          </p>
+        </section>
+
+        <section className="dashboard-highlights" aria-label="Wichtigste Aufgaben">
+          <p className="dashboard-eyebrow">WICHTIGSTE AUFGABEN</p>
+          {taskSummary === null ? <p className="dashboard-empty">Wird geladen ...</p>
+            : taskSummary.topTasks.length === 0 ? <p className="dashboard-empty">Keine offenen Aufgaben. Gut gemacht!</p>
+            : <ul className="dashboard-highlight-list">
+              {taskSummary.topTasks.map(task => (
+                <li key={task.id}>
+                  <span className="dashboard-highlight-dot" aria-hidden="true">{PRIORITY_DOTS[task.priority.label] ?? '⚪'}</span>
+                  <span className="dashboard-highlight-title">{task.title}</span>
+                  <span className="dashboard-highlight-due">{formatDueLabel(task.dueAt)}</span>
+                </li>
+              ))}
+            </ul>}
+        </section>
+
+        <div className="dashboard-split">
+          {taskSummary && taskSummary.byGroup.length > 0 && (
+            <section className="dashboard-group-progress" aria-label="Fortschritt je Gruppe">
+              <p className="dashboard-eyebrow">FORTSCHRITT JE GRUPPE</p>
+              <ul className="group-progress-list">
+                {taskSummary.byGroup.map(group => {
+                  const percent = group.total > 0 ? Math.round((group.done / group.total) * 100) : 0;
+                  return (
+                    <li key={group.id}>
+                      <div className="group-progress-heading"><span>{group.name}</span><span>{group.done}/{group.total}</span></div>
+                      <div className="progress-track progress-track--small">
+                        <div className="progress-fill" style={{ width: `${percent}%` }} />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
+
+          {taskSummary && taskSummary.recentActivity.length > 0 && (
+            <section className="dashboard-activity" aria-label="Letzte Aktivität">
+              <p className="dashboard-eyebrow">LETZTE AKTIVITÄT</p>
+              <ul className="activity-list">
+                {taskSummary.recentActivity.map(task => (
+                  <li key={task.id}>
+                    <span className="activity-dot" aria-hidden="true" />
+                    <span className="activity-text"><strong>{task.title}</strong> {STATUS_ACTIVITY_LABELS[task.status]}</span>
+                    <span className="activity-time">{formatRelativeTime(task.updatedAt)}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </div>
+
+        {groups && groups.length > 0 && (
+          <section className="dashboard-groups-chips" aria-label="Gruppen">
+            <p className="dashboard-eyebrow">GRUPPEN</p>
+            <div className="dashboard-chip-row">
+              {groups.map(group => <span className="dashboard-chip" key={group.id}>{group.name}</span>)}
+            </div>
+          </section>
+        )}
 
         <section className="dashboard-next"><div><p className="dashboard-eyebrow">ARBEITSBEREICH</p><h2>Alles an einem Ort.</h2></div></section>
         <section id="groups"><GroupsPage onGroupsChange={handleGroups} /></section>

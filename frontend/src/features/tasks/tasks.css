@@ -1,8 +1,8 @@
-.tasks-panel { padding: 30px 0; background: transparent; border-top: 1px solid #cfdcd5; border-bottom: 1px solid #dce5e0; }
+.tasks-panel { margin-top: 30px; padding: 30px clamp(18px, 4vw, 34px); background: #fff; border: 1px solid #e1eae4; border-radius: 14px; box-shadow: 0 10px 30px rgba(32, 53, 45, .06); }
 .tasks-heading { display: flex; justify-content: space-between; align-items: flex-start; }
 .tasks-heading h2 { margin: 0; color: #202a35; font-family: Georgia, serif; font-size: 1.8rem; font-weight: 400; }
 .tasks-heading > span { display: grid; width: 32px; height: 32px; place-items: center; color: #2c5345; background: #e8efec; border-radius: 50%; font-size: .8rem; font-weight: 700; }
-.task-create-form { display: grid; gap: 10px; margin-top: 22px; padding: 16px; background: #f7faf8; border: 1px solid #e1eae4; border-radius: 10px; }
+.task-create-form { display: grid; gap: 10px; margin-top: 22px; padding: 18px; background: #f7faf8; border: 1px solid #e1eae4; border-radius: 12px; }
 .task-create-form > input, .task-create-form > textarea { width: 100%; }
 .task-field-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
 .task-field-row label { display: grid; gap: 4px; min-width: 0; color: #52635b; font-size: .74rem; font-weight: 650; }
@@ -13,8 +13,9 @@
 .task-create-form button, .task-actions button { padding: 10px 14px; color: #fff; background: #2c5345; border: 0; border-radius: 8px; cursor: pointer; font-weight: 700; }
 .task-create-form button:disabled { opacity: .5; cursor: wait; }
 .tasks-error { margin: 18px 0 0; padding: 10px 12px; color: #984139; background: #fff0ee; border-radius: 8px; font-size: .85rem; }
-.task-list { display: grid; gap: 10px; margin-top: 22px; }
-.task-item { padding: 16px; background: #f7faf8; border: 1px solid #e1eae4; border-radius: 9px; }
+.task-list { display: grid; gap: 12px; margin-top: 22px; }
+.task-item { padding: 18px; background: #f7faf8; border: 1px solid #e1eae4; border-radius: 11px; transition: box-shadow .18s, border-color .18s; }
+.task-item:hover { border-color: #cddad2; box-shadow: 0 6px 18px rgba(32, 53, 45, .06); }
 .task-item.is-editing { display: grid; gap: 10px; }
 .task-item-heading { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .task-item h3 { margin: 0; color: #2c5345; font-size: .98rem; }

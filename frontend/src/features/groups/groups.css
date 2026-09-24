@@ -1,4 +1,4 @@
-.groups-panel { padding: 30px 0; background: transparent; border-top: 1px solid #cfdcd5; border-bottom: 1px solid #dce5e0; }
+.groups-panel { margin-top: 30px; padding: 30px clamp(18px, 4vw, 34px); background: #fff; border: 1px solid #e1eae4; border-radius: 14px; box-shadow: 0 10px 30px rgba(32, 53, 45, .06); }
 .groups-heading { display: flex; align-items: flex-start; justify-content: space-between; }
 .groups-heading h2 { margin: 0; color: #202a35; font-family: Georgia, "Times New Roman", serif; font-size: 1.8rem; font-weight: 400; letter-spacing: -.045em; }
 .groups-count { display: grid; width: 32px; height: 32px; place-items: center; color: #2c5345; background: #e8efec; border-radius: 50%; font-size: .8rem; font-weight: 700; }
@@ -11,9 +11,9 @@
 .groups-empty { margin: 22px 0 0; color: #8a9891; font-size: .88rem; }
 .groups-content { display: grid; grid-template-columns: minmax(160px, .7fr) minmax(0, 1.3fr); gap: 20px; margin-top: 24px; }
 .groups-list { display: grid; align-content: start; gap: 7px; }
-.group-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; color: #52635b; background: #f7faf8; border: 1px solid #e1eae4; border-radius: 8px; cursor: pointer; text-align: left; }
+.group-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; color: #52635b; background: #f7faf8; border: 1px solid #e1eae4; border-radius: 8px; cursor: pointer; text-align: left; transition: box-shadow .18s, border-color .18s; }
 .group-item:hover, .group-item.is-selected { color: #2c5345; background: #e8f1eb; border-color: #afc8b8; }
-.group-details { padding: 18px; background: #f7faf8; border-radius: 10px; }
+.group-details { padding: 18px; background: #f7faf8; border: 1px solid #e1eae4; border-radius: 12px; box-shadow: 0 6px 18px rgba(32, 53, 45, .05); }
 .group-details h3 { margin: 0; color: #2c5345; font-size: 1rem; }
 .group-details ul { display: grid; gap: 8px; margin: 16px 0 0; padding: 0; list-style: none; }
 .group-details li { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #5d6c65; font-size: .84rem; }

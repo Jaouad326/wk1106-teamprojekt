@@ -115,15 +115,33 @@ export default function TasksPage({ onSummaryChange }) {
 
   useEffect(() => {
     if (!onSummaryChange) return;
+    const openTasks = tasks.filter(task => task.status !== 'done');
+    const isDueToday = task => {
+      const due = new Date(task.dueAt);
+      const now = new Date();
+      return due.getFullYear() === now.getFullYear() && due.getMonth() === now.getMonth() && due.getDate() === now.getDate();
+    };
+    const byGroup = groups.map(group => {
+      const groupTasks = tasks.filter(task => task.groupId === group.id);
+      return { id: group.id, name: group.name, total: groupTasks.length, done: groupTasks.filter(task => task.status === 'done').length };
+    }).filter(entry => entry.total > 0);
+    const recentActivity = [...tasks]
+      .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+      .slice(0, 4);
     onSummaryChange({
       total: tasks.length,
-      open: tasks.filter(task => task.status !== 'done').length,
-      overdue: tasks.filter(task => task.priority?.overdue).length,
-      next: tasks.find(task => task.status !== 'done') ?? null
+      open: openTasks.length,
+      overdue: openTasks.filter(task => task.priority?.overdue).length,
+      dueToday: openTasks.filter(isDueToday).length,
+      done: tasks.length - openTasks.length,
+      // Aufgaben kommen bereits nach Priorität sortiert von der API.
+      topTasks: openTasks.slice(0, 3),
+      byGroup,
+      recentActivity
     });
     // onSummaryChange kommt aus dem Dashboard und muss sich nicht selbst als Abhängigkeit eintragen.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tasks]);
+  }, [tasks, groups]);
 
   async function createTask(event) {
     event.preventDefault(); if (!form.title.trim() || saving) return;
