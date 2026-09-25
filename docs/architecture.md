@@ -11,6 +11,8 @@ JavaScript/ES-Module, React 18, Vite 5, Node.js, Express 4, SQLite, JSON/HTTP. A
 ## 3. Systemkontext
 ![Systemkontext](diagrams/systemkontext.svg)
 
+![Datenmodell](diagrams/datenmodell.svg)
+
 Die Browseranwendung kommuniziert mit Express. Express verwendet SQLite und im SMTP-Modus einen Mailversanddienst. Quelle: diagrams/systemkontext.mmd.
 
 ## 4. Lösungsstrategie

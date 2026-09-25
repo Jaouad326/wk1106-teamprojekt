@@ -1,0 +1,53 @@
+erDiagram
+  USERS ||--o{ TASKS : owns
+  USERS ||--o{ AUTH_SESSIONS : has
+  USERS ||--o{ GROUP_MEMBERS : joins
+  USERS ||--o{ GROUP_INVITATIONS : receives
+  GROUPS ||--o{ TASKS : contains
+  GROUPS ||--o{ GROUP_MEMBERS : has
+  GROUPS ||--o{ GROUP_INVITATIONS : sends
+  TASKS ||--o{ COMMENTS : has
+  USERS ||--o{ COMMENTS : writes
+  USERS {
+    string id PK
+    string email
+    string displayName
+  }
+  TASKS {
+    string id PK
+    string title
+    string dueAt
+    int importance
+    int difficulty
+    float effortHours
+    string status
+    string ownerId FK
+    string groupId FK
+  }
+  GROUPS {
+    string id PK
+    string name
+    string ownerId FK
+  }
+  GROUP_MEMBERS {
+    string groupId FK
+    string userId FK
+  }
+  GROUP_INVITATIONS {
+    string id PK
+    string groupId FK
+    string invitedUserId FK
+    string status
+  }
+  COMMENTS {
+    string id PK
+    string taskId FK
+    string authorId FK
+    string body
+  }
+  AUTH_SESSIONS {
+    string id PK
+    string userId FK
+    string tokenHash
+    string expiresAt
+  }
