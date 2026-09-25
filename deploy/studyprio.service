@@ -6,8 +6,8 @@ Wants=network-online.target
 [Service]
 Type=simple
 User=azureuser
-WorkingDirectory=/home/azureuser/wk1106-teamprojekt
-ExecStart=/usr/bin/npm start
+WorkingDirectory=/home/azureuser/wk1106-teamprojekt/backend
+ExecStart=/usr/bin/node --env-file-if-exists=/home/azureuser/wk1106-teamprojekt/backend/.env /home/azureuser/wk1106-teamprojekt/backend/src/server.js
 Restart=on-failure
 RestartSec=5
 

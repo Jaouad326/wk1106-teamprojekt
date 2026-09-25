@@ -52,5 +52,7 @@ jobs:
           npm --prefix frontend ci
           npm run build
           npm --prefix backend run migrate
+          sudo cp deploy/studyprio.service /etc/systemd/system/studyprio.service
+          sudo systemctl daemon-reload
           sudo systemctl restart studyprio
           REMOTE
