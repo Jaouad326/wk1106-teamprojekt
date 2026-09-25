@@ -26,7 +26,11 @@ export function createCommentRouter({ openDb, requireAuth, taskService }) {
       // Kommentare werden aus der Datenbank geladen (chronologisch sortiert)
       const db = await openDb();
       const comments = await db.all(
-        'SELECT * FROM comments WHERE taskId = ? ORDER BY createdAt ASC, id ASC',
+        `SELECT c.id, c.taskId, c.authorId, c.body, c.createdAt,
+                u.displayName AS authorName, u.email AS authorEmail
+         FROM comments c
+         JOIN users u ON u.id = c.authorId
+         WHERE c.taskId = ? ORDER BY c.createdAt ASC, c.id ASC`,
         [taskId]
       );
       await db.close();
@@ -68,7 +72,11 @@ export function createCommentRouter({ openDb, requireAuth, taskService }) {
       await db.close();
 
       // Der fertige Kommentar wird an die Webseite zurückgeschickt
-      res.status(201).json({ data: newComment });
+      res.status(201).json({ data: {
+        ...newComment,
+        authorName: req.user.displayName || '',
+        authorEmail: req.user.email
+      } });
     } catch (error) { sendRouteError(res, error); }
   });
 // Einen bestimmten Kommentar löschen

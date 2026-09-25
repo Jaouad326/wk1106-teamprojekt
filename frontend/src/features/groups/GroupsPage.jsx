@@ -93,7 +93,7 @@ export default function GroupsPage({ onGroupsChange, refreshKey, onMembershipCha
       {selectedGroup && <div className="group-details">
         <div className="group-details-heading"><h3>{selectedGroup.name}</h3><span className="group-role">{isOwner ? 'Gruppenleitung' : 'Mitglied'}</span></div>
         {membersLoading ? <p>Mitglieder werden geladen …</p> : <ul>{members.map(member => <li key={member.userId}>
-          <span>{member.email || member.userId}{member.userId === selectedGroup.ownerId && <small> · Leitung</small>}</span>
+          <span>{member.displayName || member.email || member.userId}{member.userId === selectedGroup.ownerId && <small> · Leitung</small>}</span>
           {isOwner && member.userId !== user.id && <button type="button" disabled={busy} onClick={() => handleRemoveMember(member.userId)}>Entfernen</button>}
         </li>)}</ul>}
         {isOwner && <form onSubmit={handleInvite}>
@@ -112,7 +112,7 @@ export default function GroupsPage({ onGroupsChange, refreshKey, onMembershipCha
       onCancel={() => setLeaveOpen(false)} onConfirm={handleLeave} busy={busy} error={leaveError}>
       {isOwner && otherMembers.length ? <><p>Wähle, wer die Leitung von „{selectedGroup.name}“ übernimmt. Danach hast du keinen Zugriff mehr auf ihre Gruppenaufgaben.</p>
         <label>Neue Gruppenleitung<select value={successorId} onChange={e => setSuccessorId(e.target.value)}>
-          {otherMembers.map(member => <option key={member.userId} value={member.userId}>{member.email || member.userId}</option>)}
+          {otherMembers.map(member => <option key={member.userId} value={member.userId}>{member.displayName || member.email || member.userId}</option>)}
         </select></label></> : isOwner ? <p>Du bist das letzte Mitglied. „{selectedGroup.name}“ wird aufgelöst. Die Aufgaben und Kommentare bleiben bei dir als persönliche Aufgaben erhalten. Offene Einladungen verfallen.</p>
         : <p>Du verlässt „{selectedGroup.name}“ und verlierst den Zugriff auf ihre Gruppenaufgaben. Deine persönlichen Aufgaben bleiben erhalten.</p>}
     </ConfirmDialog>}

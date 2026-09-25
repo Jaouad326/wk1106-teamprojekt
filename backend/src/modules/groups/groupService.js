@@ -63,7 +63,8 @@ export function createGroupService({ openDb, userDirectory }) {
         );
         if (!membership) fail('FORBIDDEN', 'Du hast keinen Zugriff auf diese Gruppe.');
         return db.all(
-          `SELECT gm.userId, u.email FROM group_members gm
+           `SELECT gm.userId, u.email, u.displayName
+            FROM group_members gm
            LEFT JOIN users u ON u.id = gm.userId
            WHERE gm.groupId = ? ORDER BY gm.userId ASC`,
           [groupId]
@@ -84,7 +85,7 @@ export function createGroupService({ openDb, userDirectory }) {
           if (error.message.includes('UNIQUE')) fail('CONFLICT', 'Dieser Benutzer ist bereits Mitglied der Gruppe.');
           throw error;
         }
-        return { groupId, userId: member.id, email: member.email };
+        return { groupId, userId: member.id, email: member.email, displayName: member.displayName };
       });
     },
 

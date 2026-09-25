@@ -78,7 +78,7 @@ export default function CommentSection({ taskId, onClose }) {
               <li key={comment.id}>
                 <p>{comment.body}</p>
                 <div className="comment-meta">
-                  <span>{new Date(comment.createdAt).toLocaleString('de-DE')}</span>
+                  <span><strong>{comment.authorName || comment.authorEmail || 'Unbekannter Nutzer'}</strong> · {new Date(comment.createdAt).toLocaleString('de-DE')}</span>
                   {comment.authorId === user.id && <button type="button" className="comment-delete"
                     onClick={() => handleDelete(comment.id)} disabled={deletingId === comment.id}>
                     {deletingId === comment.id ? 'Löschen ...' : 'Löschen'}
