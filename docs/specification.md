@@ -49,7 +49,7 @@ Gruppen erstellen, anzeigen, Mitglieder verwalten und Gruppenaufgaben nutzen. Ak
 Owner laden bestätigte Benutzer ein. Eingeladene Benutzer nehmen eigene offene Einladungen an oder lehnen sie ab. Eine Einladung allein erzeugt keine Mitgliedschaft.
 
 ### UC-10 Kommentare
-Berechtigte Benutzer lesen und erstellen Kommentare an Aufgaben. Kommentare bleiben an der Aufgabe gekoppelt.
+Berechtigte Benutzer lesen und erstellen Kommentare an Aufgaben. Das Kommentar-Routing delegiert die Aufgabenberechtigungsprüfung an den Task Service; die Kommentare werden direkt über die Datenbank persistiert.
 
 ### UC-11 Fokusmodus und UI
 Fokusmodus und UI-Einstellungen verändern die Darstellung, nicht die fachliche Prioritätsberechnung.
@@ -87,7 +87,7 @@ Installation nach INSTALL.md; Auth, Tasks, Priorität, Gruppen und Dokumentation
 Jaouad Achamlal: Auth/Sitzungen, Integration und CI/CD. Amin Ghazouani: Aufgabenmodul – Backend, Frontend, Persistenz und Tests. Haizam Riyas Mohamed: Gruppenverwaltung – Logik, UI und Einladungen. Bassim Hassan: UI/UX – Dashboard, Priorisierung, Fokusmodus und Dark Mode. Mohamed Ahshan Siddiqali: Projektbasis, Datenbank und Kommentarfunktion. Matrikelnummern und persönliche E-Mail-Adressen werden nicht öffentlich dokumentiert.
 
 ## 11. KI-Einsatz
-ChatGPT/Codex und GitHub Copilot wurden unterstützend für Entwürfe, Codevarianten, Testideen, Fehlersuche und Dokumentation verwendet. Ergebnisse wurden mit Repository-Code, Schnittstellen, Datenfeldern und Tests abgeglichen; die fachliche Verantwortung verbleibt beim Team.
+Im Projekt wurden **ChatGPT Astra**, **Claude Sonnet 5** und **GPT-5.6 Terra** als unterstützende KI-Werkzeuge eingesetzt. Verwendet wurden sie insbesondere für Entwürfe, Codevarianten, Testideen, Fehlersuche und Dokumentation. Ergebnisse wurden mit dem tatsächlichen Repository-Code, Schnittstellen und Datenfeldern abgeglichen und relevante Funktionen getestet. Die fachliche Prüfung, Anpassung und Verantwortung verbleiben beim Projektteam.
 
 ## 12. Weiterführend
 - architecture.md

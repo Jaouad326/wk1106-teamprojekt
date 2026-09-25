@@ -4,7 +4,7 @@
 Die vollständige Anleitung steht in INSTALL.md. Kurz: Repository klonen, Node.js bereitstellen, Abhängigkeiten installieren, .env anlegen, Migration ausführen und npm run dev starten.
 
 ## Struktur
-frontend/src enthält API- und Feature-Code. backend/src/modules enthält Auth, Tasks, Groups und Comments. Backend folgt grundsätzlich Route → Service → Repository/Migration.
+frontend/src enthält API- und Feature-Code. backend/src/modules enthält Auth, Tasks, Groups und Comments. Backend folgt bei den fachlich geschichteten Modulen grundsätzlich Route → Service → Repository/Migration; der Kommentarbereich bildet dabei eine bewusst schlankere Route-/DB-Implementierung.
 
 ## Teststrategie
 **Unit:** reine Fachlogik, insbesondere Prioritätsberechnung.  
@@ -31,4 +31,4 @@ Wesentliche Architekturentscheidung → ADR.
 Datenmodell ändern → Spezifikation/Architektur und Codepfade abgleichen.
 
 ## KI
-ChatGPT/Codex und GitHub Copilot wurden als Assistenz für Entwürfe, Implementierung, Tests und Dokumentation genutzt. Ausgaben wurden durch Code-/Dokumentenabgleich und Tests überprüft.
+Im Projekt wurden **ChatGPT Astra**, **Claude Sonnet 5** und **GPT-5.6 Terra** als Assistenz für Entwürfe, Implementierung, Tests und Dokumentation genutzt. Ausgaben wurden durch Code-/Dokumentenabgleich und Tests überprüft. Das Team bleibt für den resultierenden Code verantwortlich.

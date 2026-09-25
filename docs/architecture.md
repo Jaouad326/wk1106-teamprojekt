@@ -34,7 +34,7 @@ Auth: Routes, Service, Repository, Session-Service, Mailer und React-Auth. Detai
 
 Groups: Group Service und Invitation Service; group_members ist die maßgebliche Quelle der aktuellen Mitgliedschaft. Details in arch/groups.md.
 
-Comments: Kommentare referenzieren Aufgaben. Die Zugriffsprüfung soll dieselben aktuellen Aufgaben-/Gruppenrechte verwenden.
+Comments: commentRoutes.js kapselt die HTTP-Schnittstelle. Die Route nutzt taskService für die Aufgabenberechtigungsprüfung und openDb für das direkte Lesen/Schreiben der Kommentarzeilen; eine separate Comment-Service-/Repository-Schicht ist im M3-Stand nicht vorhanden.
 
 ## 6. Laufzeitsichten
 ### Aufgabe erstellen
@@ -78,4 +78,4 @@ Kapitel 10 und 11 entfallen nach Kursvorgabe.
 Task = Aufgabe. Priority Score = numerische Priorität. Owner = Gruppenleitung. Membership = group_members-Eintrag. Session = serverseitige Anmeldung. Repository = Datenbankzugriff. Service = Fachlogik.
 
 ## KI-Einsatz
-ChatGPT/Codex und GitHub Copilot wurden unterstützend für Architekturentwürfe, Code-/Testideen und Dokumentation eingesetzt. Die Architektur wurde anschließend anhand der tatsächlichen Dateien, Schnittstellen, Datenstrukturen und Tests abgeglichen. Nicht implementierte Funktionen werden nicht als vorhanden dargestellt.
+Im Projekt wurden **ChatGPT Astra**, **Claude Sonnet 5** und **GPT-5.6 Terra** als unterstützende KI-Werkzeuge eingesetzt. Sie dienten unter anderem für Architekturentwürfe, Code-/Testideen und Dokumentation. Die Architektur wurde anschließend anhand der tatsächlichen Dateien, Schnittstellen, Datenstrukturen und Tests abgeglichen. Nicht implementierte Funktionen werden nicht als vorhanden dargestellt.

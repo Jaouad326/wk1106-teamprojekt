@@ -11,15 +11,15 @@
 | UC-07 | Priority Function | taskPriority.js, taskService.listTasks | Unit-Tests |
 | UC-08 | Group Service/Access | backend/src/modules/groups/* | Group-Integration |
 | UC-09 | Invitation Service | groupInvitationService.js | Group-Integration |
-| UC-10 | Comment Service/Repository | backend/src/modules/comments/* | Kommentar-/Integrationstest |
-| UC-11 | Dashboard/UI | frontend/src/features/* | Build + Browserprüfung |
+| UC-10 | Comment Routes + Task Service | backend/src/modules/comments/commentRoutes.js, taskService.js | Kommentar-/Integrationstest |
+| UC-11 | Dashboard/UI | frontend/src/features/dashboard/* | Build + Browserprüfung |
 
 ## Daten-Trace
 Task → taskMigration.js/taskRepository.js/taskService.js.  
 Priority → taskPriority.js.  
 User/Session → Auth Migration/Repository/Session Service.  
 Group/Membership/Invitation → groupMigration.js und Group Services.  
-Comment → Comment Migration/Repository/Service.
+Comment → commentMigration.js + commentRoutes.js.
 
 ## ADR-Trace
 E-Mail-Link → Auth. SQLite Sessions → Auth. Mailmodus → Auth/Mailer. Frontend/Backend → Gesamtsystem. SQLite Persistence → Gesamtsystem.
