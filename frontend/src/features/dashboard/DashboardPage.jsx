@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../../api.js';
+import {
+  getGroupInvitations,
+  acceptGroupInvitation,
+  declineGroupInvitation
+} from '../groups/groupsApi.js';
 import { useAuth } from '../auth/AuthContext.js';
 import GroupsPage from '../groups/GroupsPage.jsx';
 import TasksPage from '../tasks/TasksPage.jsx';
@@ -41,6 +46,10 @@ export default function DashboardPage() {
   const [profileName, setProfileName] = useState(user.displayName || '');
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileError, setProfileError] = useState('');
+  const [invitations, setInvitations] = useState([]);
+const [invitationsOpen, setInvitationsOpen] = useState(false);
+const [invitationError, setInvitationError] = useState('');
+const [invitationBusy, setInvitationBusy] = useState(false);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('studyprio:dark-mode') === 'true');
   const handleTaskSummary = useCallback(summary => setTaskSummary(summary), []);
   const handleGroups = useCallback(list => setGroups(list), []);
@@ -51,6 +60,37 @@ export default function DashboardPage() {
   useEffect(() => {
     localStorage.setItem('studyprio:dark-mode', String(darkMode));
   }, [darkMode]);
+  async function loadInvitations() {
+  try {
+    setInvitationError('');
+    const data = await getGroupInvitations();
+    setInvitations(data);
+  } catch (error) {
+    setInvitationError(error.message);
+  }
+}useEffect(() => {
+  loadInvitations();
+}, []);
+async function respondToInvitation(invitationId, action) {
+  if (invitationBusy) return;
+
+  setInvitationBusy(true);
+  setInvitationError('');
+
+  try {
+    if (action === 'accept') {
+      await acceptGroupInvitation(invitationId);
+    } else {
+      await declineGroupInvitation(invitationId);
+    }
+
+    await loadInvitations();
+  } catch (error) {
+    setInvitationError(error.message);
+  } finally {
+    setInvitationBusy(false);
+  }
+}
 
   async function saveProfile(event) {
     event.preventDefault();
@@ -90,6 +130,7 @@ export default function DashboardPage() {
       detail: groupCount === 0 ? 'Noch keine Gruppen. Erstelle deine erste Gruppe.' : 'Aktuell verwaltete Gruppen.'
     }
   ];
+  
 
   return (
     <main className={`dashboard-page${darkMode ? ' is-dark' : ''}`}>
@@ -112,6 +153,87 @@ export default function DashboardPage() {
       <div className="dashboard-content">
         <header className="dashboard-topbar">
           <nav className="dashboard-topnav" aria-label="Hauptnavigation">
+          <div className="invitation-notifications">
+  <button
+    type="button"
+    className="notification-button"
+    aria-label="Gruppeneinladungen"
+    aria-expanded={invitationsOpen}
+    onClick={() => setInvitationsOpen(open => !open)}
+  >
+    🔔
+    {invitations.length > 0 && (
+      <span className="notification-badge">
+        {invitations.length}
+      </span>
+    )}
+  </button>
+
+  {invitationsOpen && (
+    <div className="invitation-panel">
+      <div className="settings-heading">
+        <div>
+          <p className="dashboard-eyebrow">EINLADUNGEN</p>
+          <h2>Gruppeneinladungen</h2>
+        </div>
+
+        <button
+          className="settings-close"
+          type="button"
+          onClick={() => setInvitationsOpen(false)}
+          aria-label="Einladungen schließen"
+        >
+          ×
+        </button>
+      </div>
+
+      {invitationError && (
+        <p className="profile-error" role="alert">
+          {invitationError}
+        </p>
+      )}
+
+      {invitations.length === 0 ? (
+        <p className="dashboard-empty">
+          Keine offenen Einladungen.
+        </p>
+      ) : (
+        <ul className="invitation-list">
+          {invitations.map(invitation => (
+            <li key={invitation.id} className="invitation-item">
+              <div>
+                <strong>{invitation.groupName}</strong>
+                <p>Du wurdest zu dieser Gruppe eingeladen.</p>
+              </div>
+
+              <div className="invitation-actions">
+                <button
+                  type="button"
+                  disabled={invitationBusy}
+                  onClick={() =>
+                    respondToInvitation(invitation.id, 'accept')
+                  }
+                >
+                  Annehmen
+                </button>
+
+                <button
+                  type="button"
+                  disabled={invitationBusy}
+                  onClick={() =>
+                    respondToInvitation(invitation.id, 'decline')
+                  }
+                >
+                  Ablehnen
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )}
+</div>
             <a className="is-active" href="#overview">Home</a>
             <button type="button" aria-expanded={settingsOpen} onClick={() => setSettingsOpen(open => !open)}>Einstellungen</button>
             <button type="button" aria-expanded={profileOpen} onClick={() => { setProfileOpen(open => !open); setSettingsOpen(false); }}>Profil bearbeiten</button>
