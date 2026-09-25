@@ -1,0 +1,13 @@
+flowchart LR
+  U["Studierende"] --> FE["React / Vite Frontend"]
+  FE -->|"HTTPS/JSON"| API["Express API"]
+  API --> AUTH["Auth / Session"]
+  API --> TASK["Tasks / Priorität"]
+  API --> GROUP["Groups / Invitations"]
+  API --> COMMENT["Comments"]
+  AUTH --> DB[("SQLite")]
+  TASK --> DB
+  GROUP --> DB
+  COMMENT --> DB
+  AUTH -->|"SMTP/TLS"| MAIL["Mailversand"]
+  MAIL --> U

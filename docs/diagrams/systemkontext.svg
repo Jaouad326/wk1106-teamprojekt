@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="500" viewBox="0 0 1100 500">
+<rect width="1100" height="500" fill="white"/>
+<g font-family="Arial" fill="#111" stroke="#333" stroke-width="2">
+<rect x="30" y="205" width="150" height="70" rx="10" fill="#f4f4f4"/><rect x="250" y="180" width="190" height="120" rx="10" fill="#f4f4f4"/><rect x="510" y="150" width="220" height="180" rx="10" fill="#f4f4f4"/><ellipse cx="900" cy="240" rx="110" ry="65" fill="#eee"/><rect x="790" y="55" width="220" height="70" rx="10" fill="#f4f4f4"/>
+<g stroke-width="0" text-anchor="middle"><text x="105" y="235">Studierende</text><text x="105" y="255">Browser</text><text x="345" y="215">React / Vite</text><text x="345" y="240">Frontend</text><text x="345" y="265">Dashboard / Tasks / Groups</text><text x="620" y="185">Express API</text><text x="620" y="215">Auth</text><text x="620" y="240">Tasks / Priorität</text><text x="620" y="265">Groups / Comments</text><text x="620" y="295">Services + Repositories</text><text x="900" y="235">SQLite</text><text x="900" y="258">Persistenz</text><text x="900" y="85">SMTP / Mailversand</text><text x="900" y="105">nur Auth</text></g>
+<g fill="none" stroke="#333"><path d="M180 240 L250 240"/><path d="M440 240 L510 240"/><path d="M730 240 L790 240"/><path d="M680 150 L850 115"/><path d="M850 125 L700 175"/></g>
+<g stroke-width="0" text-anchor="middle" font-size="14"><text x="470" y="225">JSON / HTTP</text><text x="815" y="225">SQL</text><text x="775" y="155">SMTP/TLS</text></g>
+</g></svg>
