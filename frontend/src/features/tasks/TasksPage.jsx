@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api } from '../../api.js';
+import { getGroups } from '../groups/groupsApi.js';
 import CommentSection from '../comments/CommentSection.jsx';
 import './tasks.css';
 
@@ -18,7 +19,6 @@ function toPayload(values) {
 }
 function toFormValues(task) {
   const due = new Date(task.dueAt);
-  // datetime-local erwartet Ortszeit; die API speichert UTC.
   const localDue = new Date(due.getTime() - due.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
   return {
     title: task.title, description: task.description, dueAt: localDue,
@@ -27,13 +27,25 @@ function toFormValues(task) {
 }
 
 function TaskFields({ values, onChange, groups, showGroup }) {
+  const dueInputRef = useRef(null);
+
+  function openCalendar(event) {
+    event.preventDefault();
+    dueInputRef.current?.showPicker?.();
+    dueInputRef.current?.focus();
+  }
+
   return <>
     <input required placeholder="Titel" value={values.title} onChange={event => onChange({ ...values, title: event.target.value })} />
     <textarea placeholder="Beschreibung (optional)" rows={2} value={values.description || ''}
       onChange={event => onChange({ ...values, description: event.target.value })} />
     <div className="task-field-row">
       <label>Fällig
-        <input required type="datetime-local" value={values.dueAt} onChange={event => onChange({ ...values, dueAt: event.target.value })} />
+        <span className="date-input-wrap">
+          <input ref={dueInputRef} required type="datetime-local" value={values.dueAt}
+            onChange={event => onChange({ ...values, dueAt: event.target.value })} />
+          <button type="button" className="calendar-button" onMouseDown={openCalendar} aria-label="Kalender öffnen">📅</button>
+        </span>
       </label>
       <label>Wichtigkeit
         <select value={values.importance} onChange={event => onChange({ ...values, importance: event.target.value })}>
@@ -77,7 +89,13 @@ function TaskItem({ task, groups, editingId, setEditingId, openCommentsId, setOp
     </article>;
   }
 
-  return <article className="task-item">
+  function closeCommentsOutsidePanel(event) {
+    if (commentsOpen && !event.target.closest('.comments-panel') && !event.target.closest('.comments-toggle')) {
+      setOpenCommentsId(null);
+    }
+  }
+
+  return <article className="task-item" onClick={closeCommentsOutsidePanel}>
     <div className="task-item-main">
       <div className="task-item-heading">
         <span className={`priority-badge priority-${task.priority.label.toLowerCase().replace(' ', '-')}`}>{task.priority.label}</span>
@@ -96,15 +114,16 @@ function TaskItem({ task, groups, editingId, setEditingId, openCommentsId, setOp
         {Object.entries(STATUS_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
       </select>
       <button type="button" onClick={() => { setDraft(toFormValues(task)); setEditingId(task.id); }}>Bearbeiten</button>
-      <button type="button" onClick={() => setOpenCommentsId(commentsOpen ? null : task.id)}>Kommentare</button>
+      <button className="comments-toggle" type="button" onClick={() => setOpenCommentsId(commentsOpen ? null : task.id)}>Kommentare</button>
       <button type="button" onClick={() => onRemove(task)}>Löschen</button>
     </div>
-    {commentsOpen && <CommentSection taskId={task.id} />}
+    {commentsOpen && <CommentSection taskId={task.id} onClose={() => setOpenCommentsId(null)} />}
   </article>;
 }
 
-export default function TasksPage({ onSummaryChange, groups }) {
+export default function TasksPage({ onSummaryChange }) {
   const [tasks, setTasks] = useState([]);
+  const [groups, setGroups] = useState([]);
   const [form, setForm] = useState(emptyTask);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -112,7 +131,7 @@ export default function TasksPage({ onSummaryChange, groups }) {
   const [openCommentsId, setOpenCommentsId] = useState(null);
 
   async function loadTasks() { try { setTasks(await api('/tasks')); } catch (requestError) { setError(requestError.message); } }
-  useEffect(() => { loadTasks(); }, []);
+  useEffect(() => { loadTasks(); getGroups().then(setGroups).catch(() => {}); }, []);
 
   useEffect(() => {
     if (!onSummaryChange) return;

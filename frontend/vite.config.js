@@ -7,7 +7,7 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     host: '127.0.0.1',
-    allowedHosts: ['diagnosis-notebook-organize-healthy.trycloudflare.com'],
+    allowedHosts: true,
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:3000',

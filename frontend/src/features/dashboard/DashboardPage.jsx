@@ -6,12 +6,18 @@ import {
   declineGroupInvitation
 } from '../groups/groupsApi.js';
 import { useAuth } from '../auth/AuthContext.js';
+import { ChevronLeft, ChevronRight, ClipboardCheck, LayoutGrid, LogOut, Users } from 'lucide-react';
+import FocusMode from './FocusMode.jsx';
 import GroupsPage from '../groups/GroupsPage.jsx';
 import TasksPage from '../tasks/TasksPage.jsx';
 import './dashboard.css';
 
-const EMPTY_GROUPS = [];
-const PRIORITY_DOTS = { 'Sehr hoch': '🔴', 'Hoch': '🟠', 'Mittel': '🟡', 'Niedrig': '⚪' };
+const PRIORITY_CLASSES = {
+  'Sehr hoch': 'priority-sehr-hoch',
+  Hoch: 'priority-hoch',
+  Mittel: 'priority-mittel',
+  Niedrig: 'priority-niedrig'
+};
 const STATUS_ACTIVITY_LABELS = { open: 'angelegt', in_progress: 'in Arbeit', done: 'erledigt' };
 
 // Kurze, menschenlesbare Frist statt eines exakten Datums, passend zum Übersichts-Mockup.
@@ -51,6 +57,7 @@ const [invitationsOpen, setInvitationsOpen] = useState(false);
 const [invitationError, setInvitationError] = useState('');
 const [invitationBusy, setInvitationBusy] = useState(false);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('studyprio:dark-mode') === 'true');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => localStorage.getItem('studyprio:sidebar-collapsed') === 'true');
   const handleTaskSummary = useCallback(summary => setTaskSummary(summary), []);
   const handleGroups = useCallback(list => setGroups(list), []);
   const groupCount = groups === null ? null : groups.length;
@@ -66,7 +73,8 @@ const [invitationBusy, setInvitationBusy] = useState(false);
     const data = await getGroupInvitations();
     setInvitations(data);
   } catch (error) {
-    setInvitationError(error.message);
+    setInvitations([]);
+    setInvitationError('Keine Benachrichtigungen vorhanden.');
   }
 }useEffect(() => {
   loadInvitations();
@@ -91,6 +99,10 @@ async function respondToInvitation(invitationId, action) {
     setInvitationBusy(false);
   }
 }
+
+  useEffect(() => {
+    localStorage.setItem('studyprio:sidebar-collapsed', String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
 
   async function saveProfile(event) {
     event.preventDefault();
@@ -133,20 +145,24 @@ async function respondToInvitation(invitationId, action) {
   
 
   return (
-    <main className={`dashboard-page${darkMode ? ' is-dark' : ''}`}>
+    <main className={`dashboard-page${darkMode ? ' is-dark' : ''}${sidebarCollapsed ? ' is-sidebar-collapsed' : ''}`}>
       <aside className="dashboard-sidebar">
-        <div className="dashboard-brand"><span className="brand-mark" aria-hidden="true">S</span><span>StudyPrio</span></div>
+        <div className="dashboard-brand"><span className="brand-mark" aria-hidden="true">S</span><span className="dashboard-sidebar-label">StudyPrio</span></div>
+        <button className="sidebar-toggle" type="button" onClick={() => setSidebarCollapsed(value => !value)}
+          aria-label={sidebarCollapsed ? 'Sidebar öffnen' : 'Sidebar einklappen'} title={sidebarCollapsed ? 'Sidebar öffnen' : 'Sidebar einklappen'}>
+          {sidebarCollapsed ? <ChevronRight aria-hidden="true" /> : <ChevronLeft aria-hidden="true" />}
+        </button>
         <nav className="dashboard-nav" aria-label="Bereiche">
-          <a className="is-active" href="#overview">Übersicht</a>
-          <a href="#tasks">Aufgaben</a>
-          <a href="#groups">Gruppen</a>
+          <a className="is-active" href="#overview" title="Übersicht"><LayoutGrid aria-hidden="true" /><span className="dashboard-sidebar-label">Übersicht</span></a>
+          <a href="#groups" title="Gruppen"><Users aria-hidden="true" /><span className="dashboard-sidebar-label">Gruppen</span></a>
+          <a href="#tasks" title="Aufgaben"><ClipboardCheck aria-hidden="true" /><span className="dashboard-sidebar-label">Aufgaben</span></a>
         </nav>
         <div className="dashboard-account">
           <div className="profile-summary">
             <span className="profile-avatar" aria-hidden="true"><span /></span>
-            <span><strong>{visibleName}</strong><small>{user.email}</small></span>
+            <span className="dashboard-sidebar-label"><strong>{visibleName}</strong><small>{user.email}</small></span>
           </div>
-          <button type="button" onClick={logout}>Abmelden</button>
+          <button type="button" onClick={logout}><LogOut aria-hidden="true" /><span className="dashboard-sidebar-label">Abmelden</span></button>
         </div>
       </aside>
 
@@ -187,15 +203,9 @@ async function respondToInvitation(invitationId, action) {
         </button>
       </div>
 
-      {invitationError && (
-        <p className="profile-error" role="alert">
-          {invitationError}
-        </p>
-      )}
-
       {invitations.length === 0 ? (
         <p className="dashboard-empty">
-          Keine offenen Einladungen.
+          {invitationError || 'Keine Benachrichtigungen vorhanden.'}
         </p>
       ) : (
         <ul className="invitation-list">
@@ -293,6 +303,8 @@ async function respondToInvitation(invitationId, action) {
           </p>
         </section>
 
+        <FocusMode tasks={taskSummary?.topTasks || []} />
+
         <section className="dashboard-highlights" aria-label="Wichtigste Aufgaben">
           <p className="dashboard-eyebrow">WICHTIGSTE AUFGABEN</p>
           {taskSummary === null ? <p className="dashboard-empty">Wird geladen ...</p>
@@ -300,7 +312,7 @@ async function respondToInvitation(invitationId, action) {
             : <ul className="dashboard-highlight-list">
               {taskSummary.topTasks.map(task => (
                 <li key={task.id}>
-                  <span className="dashboard-highlight-dot" aria-hidden="true">{PRIORITY_DOTS[task.priority.label] ?? '⚪'}</span>
+                  <span className={`dashboard-highlight-dot ${PRIORITY_CLASSES[task.priority.label] ?? 'priority-erledigt'}`} aria-hidden="true" />
                   <span className="dashboard-highlight-title">{task.title}</span>
                   <span className="dashboard-highlight-due">{formatDueLabel(task.dueAt)}</span>
                 </li>

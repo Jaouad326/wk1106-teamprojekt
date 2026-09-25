@@ -1,114 +1,100 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { api } from '../../api.js';
+import { useAuth } from '../auth/AuthContext.js';
+import './comments.css';
 
-export default function CommentSection({ taskId }) {
+export default function CommentSection({ taskId, onClose }) {
+  const { user } = useAuth();
+  const panelRef = useRef(null);
   const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState('');
+  const [body, setBody] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
-    fetch(`/api/tasks/${taskId}/comments`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.error) throw new Error(data.error.message);
-        setComments(data.data || []);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err.message);
-        setLoading(false);
-      });
+    function closeOnOutsideClick(event) {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (panelRef.current?.contains(target) || target.closest('.comments-toggle')) return;
+      onClose();
+    }
+    document.addEventListener('click', closeOnOutsideClick);
+    return () => document.removeEventListener('click', closeOnOutsideClick);
+  }, [onClose]);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true); setError('');
+    api(`/tasks/${taskId}/comments`)
+      .then(data => { if (active) setComments(data); })
+      .catch(requestError => { if (active) setError(requestError.message); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   }, [taskId]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!newComment.trim() || submitting) return;
-
-    setSubmitting(true);
+  async function handleSubmit(event) {
+    event.preventDefault();
+    if (!body.trim() || submitting) return;
+    setSubmitting(true); setError('');
     try {
-      const res = await fetch(`/api/tasks/${taskId}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: newComment })
-      });
-      const result = await res.json();
-      
-      if (result.error) throw new Error(result.error.message);
-      
-      setComments([...comments, result.data]);
-      setNewComment('');
-    } catch (err) {
-      alert('Fehler beim Senden: ' + err.message);
+      const comment = await api(`/tasks/${taskId}/comments`, { method: 'POST', body: { body } });
+      setComments(current => [...current, comment]);
+      setBody('');
+    } catch (requestError) {
+      setError(requestError.message);
     } finally {
       setSubmitting(false);
     }
-  };
+  }
 
-  const handleDelete = async (commentId) => {
-    if (!window.confirm('Möchtest du diesen Kommentar wirklich löschen?')) return;
-
+  async function handleDelete(commentId) {
+    if (!window.confirm('Diesen Kommentar wirklich löschen?') || deletingId) return;
+    setDeletingId(commentId); setError('');
     try {
-      const res = await fetch(`/api/tasks/${taskId}/comments/${commentId}`, {
-        method: 'DELETE'
-      });
-      const result = await res.json();
-      
-      if (result.error) throw new Error(result.error.message);
-      
-      setComments(comments.filter(c => c.id !== commentId));
-    } catch (err) {
-      alert('Fehler beim Löschen: ' + err.message);
+      await api(`/tasks/${taskId}/comments/${commentId}`, { method: 'DELETE' });
+      setComments(current => current.filter(comment => comment.id !== commentId));
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setDeletingId(null);
     }
-  };
-
-  if (loading) return <p>Kommentare werden geladen...</p>;
-  if (error) return <p style={{ color: 'red' }}>Fehler: {error}</p>;
+  }
 
   return (
-    <div style={{ marginTop: '30px', borderTop: '2px solid #eee', paddingTop: '20px' }}>
-      <h3>Kommentare zur Aufgabe</h3>
-      
-      {comments.length === 0 ? (
-        <p style={{ color: '#666' }}>Noch keine Kommentare vorhanden. Mach den Anfang!</p>
-      ) : (
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {comments.map(c => (
-            <li key={c.id} style={{ background: '#f9f9f9', padding: '15px', marginBottom: '10px', borderRadius: '8px', position: 'relative' }}>
-              <small style={{ color: '#888' }}>
-                Autor-ID: {c.authorId} | Gesendet am: {new Date(c.createdAt).toLocaleString('de-DE')}
-              </small>
-              <p style={{ margin: '8px 0 0 0', whiteSpace: 'pre-wrap' }}>{c.body}</p>
-              
-              <button 
-                onClick={() => handleDelete(c.id)}
-                style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '4px', cursor: 'pointer', padding: '4px 8px' }}
-              >
-                Löschen
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <form onSubmit={handleSubmit} style={{ marginTop: '20px' }}>
-        <textarea 
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Schreibe einen Kommentar... (max. 1000 Zeichen)"
-          maxLength={1000}
-          rows="3"
-          style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
-          disabled={submitting}
-        />
-        <button 
-          type="submit" 
-          disabled={submitting || !newComment.trim()}
-          style={{ marginTop: '10px', padding: '10px 20px', cursor: 'pointer', background: '#0056b3', color: 'white', border: 'none', borderRadius: '5px' }}
-        >
-          {submitting ? 'Wird gesendet...' : 'Kommentar senden'}
-        </button>
-      </form>
+    <div className="comments-panel" ref={panelRef}>
+      <div className="comments-heading">
+        <h4>Kommentare</h4>
+        <button className="comments-close" type="button" onClick={onClose} aria-label="Kommentare schließen">×</button>
+      </div>
+      {loading ? <p className="comments-status">Kommentare werden geladen ...</p> : <>
+        {error && <p className="comments-error" role="alert">{error}</p>}
+        {comments.length === 0 ? (
+          <p className="comments-empty">Noch keine Kommentare. Schreibe den ersten.</p>
+        ) : (
+          <ul className="comments-list">
+            {comments.map(comment => (
+              <li key={comment.id}>
+                <p>{comment.body}</p>
+                <div className="comment-meta">
+                  <span>{new Date(comment.createdAt).toLocaleString('de-DE')}</span>
+                  {comment.authorId === user.id && <button type="button" className="comment-delete"
+                    onClick={() => handleDelete(comment.id)} disabled={deletingId === comment.id}>
+                    {deletingId === comment.id ? 'Löschen ...' : 'Löschen'}
+                  </button>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+        <form className="comment-form" onSubmit={handleSubmit}>
+          <label htmlFor={`comment-${taskId}`}>Neuer Kommentar</label>
+          <textarea id={`comment-${taskId}`} value={body} maxLength={1000} rows={2}
+            onChange={event => setBody(event.target.value)} disabled={submitting} placeholder="Kommentar schreiben ..." />
+          <button type="submit" disabled={submitting || !body.trim()}>{submitting ? 'Wird gesendet ...' : 'Kommentar senden'}</button>
+        </form>
+      </>}
     </div>
   );
 }

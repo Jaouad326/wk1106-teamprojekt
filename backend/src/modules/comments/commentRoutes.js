@@ -74,12 +74,20 @@ export function createCommentRouter({ openDb, requireAuth, taskService }) {
 // Einen bestimmten Kommentar löschen
   router.delete('/:commentId', requireAuth, async (req, res) => {
     try {
-      const { commentId } = req.params;
-      await taskService.assertWritable(req.user.id, req.params.taskId);
+      await taskService.get(req.user.id, req.params.taskId);
       const db = await openDb();
-      await db.run('DELETE FROM comments WHERE id = ?', [commentId]);
-      await db.close();
-      res.json({ message: 'Kommentar erfolgreich gelöscht' });
+      try {
+        const comment = await db.get(
+          'SELECT authorId FROM comments WHERE id = ? AND taskId = ?',
+          [req.params.commentId, req.params.taskId]
+        );
+        if (!comment) return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Kommentar nicht gefunden.' } });
+        if (comment.authorId !== req.user.id) {
+          return res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Du darfst nur eigene Kommentare löschen.' } });
+        }
+        await db.run('DELETE FROM comments WHERE id = ? AND taskId = ?', [req.params.commentId, req.params.taskId]);
+      } finally { await db.close(); }
+      res.status(204).end();
     } catch (error) { sendRouteError(res, error); }
   });
   return router;

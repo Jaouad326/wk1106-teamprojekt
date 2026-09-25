@@ -1,14 +1,35 @@
-.comments-panel { margin-top: 14px; padding: 16px; background: #fbfcfb; border: 1px solid #e1eae4; border-radius: 9px; }
-.comments-panel h4 { margin: 0 0 12px; color: #2c5345; font-size: .88rem; font-weight: 750; }
+.comments-panel { margin-top: 14px; padding: 16px; background: #fbfcfb; border: 1px solid #e1eae4; border-radius: 9px; animation: comment-panel-appear .18s ease-out both; }
+@keyframes comment-panel-appear { from { opacity: 0; transform: translateY(-5px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.comments-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.comments-panel h4 { margin: 0; color: #2c5345; font-size: .88rem; font-weight: 750; }
+.comments-close { display: grid; width: 26px; height: 26px; place-items: center; padding: 0; color: #77847d; background: transparent; border: 0; border-radius: 50%; cursor: pointer; font-size: 1.2rem; line-height: 1; }
+.comments-close:hover { color: #202a35; background: #e8efec; }
 .comments-status, .comments-empty { margin: 0; color: #8a9891; font-size: .82rem; }
 .comments-error { margin: 0 0 12px; padding: 9px 11px; color: #984139; background: #fff0ee; border-radius: 7px; font-size: .82rem; }
 .comments-list { display: grid; gap: 8px; margin: 0 0 14px; padding: 0; list-style: none; }
 .comments-list li { padding: 10px 12px; background: #fff; border: 1px solid #e6ede9; border-radius: 8px; }
 .comments-list p { margin: 0; color: #202a35; font-size: .85rem; white-space: pre-wrap; }
-.comments-list span { display: block; margin-top: 6px; color: #9aa6a0; font-size: .72rem; }
+.comment-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; }
+.comment-meta span { color: #9aa6a0; font-size: .72rem; }
+.comment-delete { padding: 0; color: #984139; background: transparent; border: 0; cursor: pointer; font: inherit; font-size: .72rem; font-weight: 700; }
+.comment-delete:hover { text-decoration: underline; }
+.comment-delete:disabled { opacity: .5; cursor: wait; }
 .comment-form { display: grid; gap: 8px; }
 .comment-form label { color: #52635b; font-size: .74rem; font-weight: 650; }
 .comment-form textarea { padding: 9px 11px; color: #202a35; background: #fff; border: 1px solid #ccd8d1; border-radius: 8px; resize: vertical; font: inherit; }
 .comment-form textarea:focus-visible { outline: 2px solid #2c5345; outline-offset: 1px; }
 .comment-form button { justify-self: start; padding: 8px 14px; color: #fff; background: #2c5345; border: 0; border-radius: 7px; cursor: pointer; font-size: .8rem; font-weight: 700; }
 .comment-form button:disabled { opacity: .5; cursor: wait; }
+
+.dashboard-page.is-dark .comments-panel { background: #181818; border-color: #333; }
+.dashboard-page.is-dark .comments-panel h4 { color: #f1f1f1; }
+.dashboard-page.is-dark .comments-close { color: #aaa; }
+.dashboard-page.is-dark .comments-close:hover { color: #fff; background: #303030; }
+.dashboard-page.is-dark .comments-list li { background: #212121; border-color: #383838; }
+.dashboard-page.is-dark .comments-list p { color: #f1f1f1; }
+.dashboard-page.is-dark .comments-list span, .dashboard-page.is-dark .comments-status, .dashboard-page.is-dark .comments-empty { color: #aaa; }
+.dashboard-page.is-dark .comments-empty { background: #212121; }
+.dashboard-page.is-dark .comment-form label { color: #aaa; }
+.dashboard-page.is-dark .comment-form textarea { color: #f1f1f1; background: #0f0f0f; border-color: #444; }
+.dashboard-page.is-dark .comment-form textarea::placeholder { color: #8a8a8a; }
+.dashboard-page.is-dark .comment-form button { color: #0f0f0f; background: #f1f1f1; }

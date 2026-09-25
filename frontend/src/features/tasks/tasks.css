@@ -4,17 +4,23 @@
 .tasks-heading > span { display: grid; width: 32px; height: 32px; place-items: center; color: #2c5345; background: #e8efec; border-radius: 50%; font-size: .8rem; font-weight: 700; }
 .task-create-form { display: grid; gap: 10px; margin-top: 22px; padding: 18px; background: #f7faf8; border: 1px solid #e1eae4; border-radius: 12px; }
 .task-create-form > input, .task-create-form > textarea { width: 100%; }
-.task-field-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.task-field-row { display: grid; grid-template-columns: minmax(170px, 1.25fr) repeat(4, minmax(0, 1fr)); gap: 10px; }
 .task-field-row label { display: grid; gap: 4px; min-width: 0; color: #52635b; font-size: .74rem; font-weight: 650; }
+.date-input-wrap { position: relative; display: flex; min-width: 0; align-items: center; }
+.date-input-wrap input { width: 100%; padding-right: 38px; }
+.date-input-wrap .calendar-button { position: absolute; right: 4px; display: grid; width: 28px; height: 28px; place-items: center; padding: 0; color: #52635b; background: transparent; border: 0; border-radius: 6px; cursor: pointer; font-size: .95rem; line-height: 1; }
+.date-input-wrap .calendar-button:hover { background: #e8efec; }
 .task-create-form input, .task-create-form select, .task-create-form textarea, .task-item.is-editing input, .task-item.is-editing select, .task-item.is-editing textarea, .task-actions select {
-  min-width: 0; padding: 10px; color: #202a35; background: #fbfcfb; border: 1px solid #ccd8d1; border-radius: 8px; font: inherit;
+  min-width: 0; min-height: 38px; padding: 10px; color: #202a35; background: #fbfcfb; border: 1px solid #ccd8d1; border-radius: 8px; font: inherit; transition: border-color .18s ease, box-shadow .18s ease;
 }
+.task-create-form input:focus-visible, .task-create-form select:focus-visible, .task-create-form textarea:focus-visible, .task-item.is-editing input:focus-visible, .task-item.is-editing select:focus-visible, .task-item.is-editing textarea:focus-visible, .task-actions select:focus-visible { border-color: #4c7d63; outline: 0; box-shadow: 0 0 0 3px rgba(76, 125, 99, .16); }
 .task-create-form textarea, .task-item.is-editing textarea { resize: vertical; }
 .task-create-form button, .task-actions button { padding: 10px 14px; color: #fff; background: #2c5345; border: 0; border-radius: 8px; cursor: pointer; font-weight: 700; }
 .task-create-form button:disabled { opacity: .5; cursor: wait; }
 .tasks-error { margin: 18px 0 0; padding: 10px 12px; color: #984139; background: #fff0ee; border-radius: 8px; font-size: .85rem; }
 .task-list { display: grid; gap: 12px; margin-top: 22px; }
-.task-item { padding: 18px; background: #f7faf8; border: 1px solid #e1eae4; border-radius: 11px; transition: box-shadow .18s, border-color .18s; }
+.task-item { padding: 18px; background: #f7faf8; border: 1px solid #e1eae4; border-radius: 11px; transition: box-shadow .18s ease-in-out, border-color .18s ease-in-out, transform .2s ease-out; animation: task-appear .2s ease-out both; }
+@keyframes task-appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .task-item:hover { border-color: #cddad2; box-shadow: 0 6px 18px rgba(32, 53, 45, .06); }
 .task-item.is-editing { display: grid; gap: 10px; }
 .task-item-heading { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -23,10 +29,11 @@
 .task-meta, .tasks-empty { margin: 6px 0 0; color: #77847d; font-size: .8rem; }
 .task-overdue { color: #984139; font-weight: 650; }
 .priority-badge { padding: 3px 9px; border-radius: 999px; font-size: .68rem; font-weight: 750; letter-spacing: .02em; }
-.priority-sehr-hoch { color: #7a2a24; background: #fbe0dc; }
-.priority-hoch { color: #8a5a1f; background: #fbecd4; }
-.priority-mittel { color: #2c5345; background: #dcebe2; }
-.priority-niedrig, .priority-erledigt { color: #5d6c65; background: #e7ece9; }
+.priority-sehr-hoch { color: #fff; background: #ef4444; }
+.priority-hoch { color: #fff; background: #f97316; }
+.priority-mittel { color: #5c4300; background: #facc15; }
+.priority-niedrig { color: #14532d; background: #86efac; }
+.priority-erledigt { color: #5d6c65; background: #e7ece9; }
 .task-actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
 .task-actions select, .task-actions button { width: 100%; height: 37px; padding: 10px; border-radius: 8px; font: inherit; font-size: .78rem; font-weight: 650; }
 .task-actions select { color: #202a35; background: #fbfcfb; border: 1px solid #ccd8d1; cursor: pointer; }
