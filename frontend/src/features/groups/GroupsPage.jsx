@@ -93,7 +93,7 @@ export default function GroupsPage({ onGroupsChange, refreshKey, onMembershipCha
       {selectedGroup && <div className="group-details">
         <div className="group-details-heading"><h3>{selectedGroup.name}</h3><span className="group-role">{isOwner ? 'Gruppenleitung' : 'Mitglied'}</span></div>
         {membersLoading ? <p>Mitglieder werden geladen …</p> : <ul>{members.map(member => <li key={member.userId}>
-          <span>{member.displayName || member.email || member.userId}{member.userId === selectedGroup.ownerId && <small> · Leitung</small>}</span>
+          <span><strong className="user-identity" title={member.email || 'E-Mail unbekannt'}>{member.displayName || member.email || member.userId}</strong>{member.userId === selectedGroup.ownerId && <small> · Leitung</small>}</span>
           {isOwner && member.userId !== user.id && <button type="button" disabled={busy} onClick={() => handleRemoveMember(member.userId)}>Entfernen</button>}
         </li>)}</ul>}
         {isOwner && <form onSubmit={handleInvite}>
