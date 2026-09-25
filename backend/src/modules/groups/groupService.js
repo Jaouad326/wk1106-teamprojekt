@@ -88,13 +88,69 @@ export function createGroupService({ openDb, userDirectory }) {
       });
     },
 
-    removeMember(ownerId, groupId, userId) {
+        removeMember(ownerId, groupId, userId) {
       return withDb(async db => {
-        const group = await db.get('SELECT * FROM groups WHERE id = ?', [groupId]);
-        if (!group) fail('NOT_FOUND', 'Gruppe nicht gefunden.');
-        if (group.ownerId !== ownerId) fail('FORBIDDEN', 'Nur der Gruppenbesitzer darf Mitglieder verwalten.');
-        if (userId === group.ownerId) fail('BAD_REQUEST', 'Der Gruppenbesitzer kann sich nicht selbst entfernen.');
-        await db.run('DELETE FROM group_members WHERE groupId = ? AND userId = ?', [groupId, userId]);
+        const group = await db.get(
+          'SELECT * FROM groups WHERE id = ?',
+          [groupId]
+        );
+
+        if (!group) {
+          fail('NOT_FOUND', 'Gruppe nicht gefunden.');
+        }
+
+        if (group.ownerId !== ownerId) {
+          fail(
+            'FORBIDDEN',
+            'Nur der Gruppenbesitzer darf Mitglieder verwalten.'
+          );
+        }
+
+        if (userId === group.ownerId) {
+          fail(
+            'BAD_REQUEST',
+            'Der Gruppenbesitzer kann sich nicht selbst entfernen.'
+          );
+        }
+
+        await db.run(
+          'DELETE FROM group_members WHERE groupId = ? AND userId = ?',
+          [groupId, userId]
+        );
+      });
+    },
+
+    leaveGroup(userId, groupId) {
+      return withDb(async db => {
+        const group = await db.get(
+          'SELECT * FROM groups WHERE id = ?',
+          [groupId]
+        );
+
+        if (!group) {
+          fail('NOT_FOUND', 'Gruppe nicht gefunden.');
+        }
+
+        if (group.ownerId === userId) {
+          fail(
+            'BAD_REQUEST',
+            'Der Gruppenbesitzer kann die Gruppe nicht verlassen.'
+          );
+        }
+
+        const result = await db.run(
+          'DELETE FROM group_members WHERE groupId = ? AND userId = ?',
+          [groupId, userId]
+        );
+
+        if (result.changes === 0) {
+          fail(
+            'FORBIDDEN',
+            'Du bist kein Mitglied dieser Gruppe.'
+          );
+        }
+
+        return { groupId };
       });
     }
   };

@@ -54,17 +54,24 @@ Datei:
 `backend/src/modules/groups/groupService.js`
 
 Der Group Service kapselt die eigentliche Gruppenverwaltung.
-
 Zu seinen Aufgaben gehören insbesondere:
 
 - Gruppen erstellen,
 - eigene Gruppen auflisten,
 - Gruppenmitglieder auflisten,
 - Mitglieder entfernen,
+- eigene Gruppenmitgliedschaft verlassen,
 - Berechtigungen des Owners bei Verwaltungsoperationen prüfen.
 
-Der Service verwendet `userDirectory`, um Benutzer anhand ihrer E-Mail-Adresse
-aufzulösen.
+Ein normales Gruppenmitglied kann seine eigene Mitgliedschaft über
+`leaveGroup()` beenden.
+
+Dabei wird der entsprechende Eintrag aus `group_members` gelöscht.
+Die Gruppe selbst bleibt bestehen.
+
+Der Gruppenbesitzer darf die Gruppe nicht über `leaveGroup()` verlassen.
+Dies wird vom Service mit einem Fehler abgelehnt.
+
 
 ## 4. Group Invitation Service
 
@@ -100,7 +107,7 @@ Beim Annehmen wird die Operation innerhalb einer Transaktion durchgeführt.
 
 Der Ablauf ist:
 
-```text
+
 Benutzer
    |
    v
@@ -118,3 +125,77 @@ group_members
    |
    v
 Einladung auf accepted setzen
+
+### Gruppe verlassen
+
+Ein normales Gruppenmitglied kann die eigene Mitgliedschaft über den
+
+Group Service beenden.
+
+Der Ablauf ist:
+
+
+
+Benutzer
+
+   |
+
+   v
+
+DELETE /api/groups/:groupId/membership
+
+   |
+
+   v
+
+groupRoutes.js
+
+   |
+
+   v
+
+groupService.leaveGroup()
+
+   |
+
+   v
+
+Mitgliedschaft prüfen
+
+   |
+
+   +-- Gruppe vorhanden?
+
+   |
+
+   +-- Benutzer ist Owner?
+
+   |
+
+   +-- Benutzer ist Mitglied?
+
+   |
+
+   v
+
+DELETE aus group_members
+
+   |
+
+   v
+
+Zugriff auf Gruppenaufgaben erlischt
+
+
+
+Die Gruppe selbst wird dabei nicht gelöscht.
+
+Nur der Eintrag des Benutzers in group_members wird entfernt.
+
+Der Owner darf die Gruppe nicht verlassen. Ein entsprechender Versuch wird
+
+vom Group Service abgelehnt.
+
+Die Zugriffsprüfung verwendet weiterhin group_members als maßgebliche
+
+Quelle für die aktuelle Mitgliedschaft.

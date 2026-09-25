@@ -89,6 +89,18 @@ router.post('/invitations/:invitationId/decline', requireAuth, async (req, res) 
       res.status(204).end();
     } catch (error) { sendError(res, error); }
   });
+  router.delete('/:groupId/membership', requireAuth, async (req, res) => {
+  try {
+    res.json({
+      data: await groupService.leaveGroup(
+        req.user.id,
+        req.params.groupId
+      )
+    });
+  } catch (error) {
+    sendError(res, error);
+  }
+});
 
   return router;
 }

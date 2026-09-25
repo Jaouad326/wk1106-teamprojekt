@@ -287,3 +287,75 @@ test('HTTP: pending invitation does not grant group membership', async t => {
 
   assert.equal(members.status, 403);
 });
+test('HTTP: member can leave group, but owner cannot', async t => {
+  const f = await fixture(t);
+
+  f.sessions.set(f.owner, f.owner);
+  f.sessions.set(f.invitee, f.invitee);
+
+  const group = await f.request('/api/groups', {
+    method: 'POST',
+    body: { name: 'Lerngruppe' },
+    userId: f.owner
+  });
+
+  assert.equal(group.status, 201);
+
+  const groupId = group.data.data.id;
+
+  const invitation = await f.request(
+    `/api/groups/${groupId}/invitations`,
+    {
+      method: 'POST',
+      body: {
+        email: 'invitee@campus.example'
+      },
+      userId: f.owner
+    }
+  );
+
+  assert.equal(invitation.status, 201);
+
+  const accepted = await f.request(
+    `/api/groups/invitations/${invitation.data.data.id}/accept`,
+    {
+      method: 'POST',
+      body: {},
+      userId: f.invitee
+    }
+  );
+
+  assert.equal(accepted.status, 200);
+
+  const left = await f.request(
+    `/api/groups/${groupId}/membership`,
+    {
+      method: 'DELETE',
+      userId: f.invitee
+    }
+  );
+
+  assert.equal(left.status, 200);
+  assert.equal(left.data.data.groupId, groupId);
+
+  const groups = await f.request(
+    '/api/groups',
+    {
+      userId: f.invitee
+    }
+  );
+
+  assert.equal(groups.status, 200);
+  assert.deepEqual(groups.data.data, []);
+
+  const ownerLeave = await f.request(
+    `/api/groups/${groupId}/membership`,
+    {
+      method: 'DELETE',
+      userId: f.owner
+    }
+  );
+
+  assert.equal(ownerLeave.status, 400);
+  assert.equal(ownerLeave.data.error.code, 'BAD_REQUEST');
+});

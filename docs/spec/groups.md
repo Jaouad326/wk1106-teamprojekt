@@ -135,6 +135,22 @@ Zugriffsprüfungen den Zugriff auf deren Gruppenaufgaben.
 Persönliche Aufgaben sind nicht Bestandteil einer Gruppe und unterliegen
 weiterhin der persönlichen Besitzerprüfung.
 
+### UC-G10: Gruppe verlassen
+
+**Akteur:** Gruppenmitglied
+
+Ein normales Gruppenmitglied kann die eigene Mitgliedschaft in einer Gruppe
+beenden.
+
+Beim Verlassen:
+
+- wird der eigene Eintrag aus `group_members` entfernt,
+- bleibt die Gruppe selbst bestehen,
+- verliert der Benutzer den Zugriff auf die Gruppenaufgaben dieser Gruppe,
+- wird die Gruppe anschließend nicht mehr in seinen eigenen Gruppen angezeigt.
+
+Der Gruppen-Owner kann die Gruppe nicht über diesen Anwendungsfall verlassen.
+
 ## Daten
 
 ### Gruppe
@@ -202,6 +218,7 @@ Ein Gruppenmitglied darf:
 - die eigene Gruppe anzeigen,
 - die Gruppenmitglieder anzeigen,
 - auf Aufgaben der Gruppe zugreifen.
+- die eigene Mitgliedschaft beenden.
 
 ### Eingeladener Benutzer
 
@@ -231,6 +248,7 @@ Die Gruppenfunktionalität wird über folgende Endpunkte bereitgestellt:
 | POST | `/api/groups` | Gruppe erstellen |
 | GET | `/api/groups/:groupId/members` | Gruppenmitglieder anzeigen |
 | DELETE | `/api/groups/:groupId/members/:userId` | Mitglied entfernen |
+| DELETE | `/api/groups/:groupId/membership` | Eigene Gruppenmitgliedschaft beenden |
 | GET | `/api/groups/invitations` | Eigene Einladungen anzeigen |
 | POST | `/api/groups/:groupId/invitations` | Einladung erstellen |
 | POST | `/api/groups/invitations/:invitationId/accept` | Einladung annehmen |
@@ -252,7 +270,8 @@ Typische Fehlerfälle sind:
 - Einladung existiert nicht.
 - Einladung gehört nicht zum angemeldeten Benutzer.
 - Einladung wurde bereits beantwortet.
-- Owner versucht, sich selbst zu entfernen.
+- Owner versucht, die Gruppe zu verlassen.
+- Benutzer versucht, eine Gruppe zu verlassen, in der er kein Mitglied ist.
 
 ## Abgrenzung
 

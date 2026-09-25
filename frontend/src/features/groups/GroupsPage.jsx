@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
+import { useAuth } from '../auth/AuthContext.js';
 import {
   addGroupMember,
   createGroup,
   getGroupMembers,
   getGroups,
+  leaveGroup,
   removeGroupMember
 } from './groupsApi.js';
 import './groups.css';
 
 export default function GroupsPage({ onGroupsChange }) {
+   const { user } = useAuth();
+
   const [groups, setGroups] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [members, setMembers] = useState([]);
@@ -64,6 +68,25 @@ export default function GroupsPage({ onGroupsChange }) {
     } catch (requestError) { setError(requestError.message); }
     finally { setBusy(false); }
   }
+  async function handleLeaveGroup() {
+  if (!selectedGroup || busy) return;
+
+  setBusy(true);
+  setError('');
+
+  try {
+    await leaveGroup(selectedGroup.id);
+
+    const updatedGroups = await getGroups();
+    setGroups(updatedGroups);
+    setSelectedGroup(null);
+    setMembers([]);
+  } catch (requestError) {
+    setError(requestError.message);
+  } finally {
+    setBusy(false);
+  }
+}
 
   if (loading) return <section className="groups-panel"><p>Gruppen werden geladen ...</p></section>;
 
@@ -94,7 +117,18 @@ export default function GroupsPage({ onGroupsChange }) {
           </div>
           {selectedGroup && (
             <div className="group-details">
-              <h3>{selectedGroup.name}</h3>
+  <h3>{selectedGroup.name}</h3>
+
+  {selectedGroup.ownerId !== user.id && (
+    <button
+      type="button"
+      onClick={handleLeaveGroup}
+      disabled={busy}
+    >
+      Gruppe verlassen
+    </button>
+  )}
+
               <ul>
                 {members.map(member => (
                   <li key={member.userId}>
