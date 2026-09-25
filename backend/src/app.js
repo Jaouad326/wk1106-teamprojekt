@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'node:path';
 import { createAuthRepository } from './modules/auth/authRepository.js';
 import { createAuthService } from './modules/auth/authService.js';
 import { createSessionService } from './modules/auth/sessionService.js';
@@ -10,7 +11,7 @@ import { createAccessService } from './access/accessService.js';
 import { createTaskModule } from './modules/tasks/taskModule.js';
 import { createCommentRouter } from './modules/comments/commentRoutes.js';
 
-export function createApp({ openDb, config, mailer, now = () => new Date(), mountFeatures = () => ({}) }) {
+export function createApp({ openDb, config, mailer, now = () => new Date(), mountFeatures = () => ({}), frontendDirectory }) {
   const repository = createAuthRepository({ openDb });
   const service = createAuthService({ repository, mailer, ...config, now });
   const sessions = createSessionService({ repository, secure: config.secure, now });
@@ -40,6 +41,15 @@ export function createApp({ openDb, config, mailer, now = () => new Date(), moun
   const features = mountFeatures(app, { openDb, requireAuth, userDirectory });
   if (features?.then) throw new TypeError('mountFeatures muss synchron sein. Datenbankverbindungen vorher öffnen.');
   app.use('/api', (req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Nicht gefunden.' } }));
+  if (frontendDirectory) {
+    // Nur den gebauten Client ausliefern, niemals Backend, .env oder Datenbank.
+    const directory = path.resolve(frontendDirectory);
+    app.get(['/', '/auth/verify'], (req, res) => {
+      res.set({ 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' });
+      res.sendFile(path.join(directory, 'index.html'));
+    });
+    app.use(express.static(directory, { index: false, dotfiles: 'deny' }));
+  }
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
     if (error instanceof AuthError) return res.status(error.status).json({ error: { code: error.code, message: error.message } });

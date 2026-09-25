@@ -1,5 +1,9 @@
 # Auth-Abschluss und kurze Erklärung
 
+> Historischer Auth-Abschluss vom 24.09. Der gemeinsame Stand und die Prüfungen
+> vom 25.09. stehen in [auth-integration.md](auth-integration.md).
+
+
 Stand: 24.09.2026, Auth-Beitrag aus work/jaouad-auth für main. Die für Freitag geplante technische
 Abschlussprüfung wird heute vorgezogen. Dieser Stand ist kein Abgabe-Tag der Gesamtapp.
 

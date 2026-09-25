@@ -19,9 +19,19 @@ test('Gemeinsame App: Anmeldung, Gruppenmitgliedschaft, Aufgabenrechte und Logou
   assert.equal(task.status, 201);
   assert.equal((await f.request('GET', `/tasks/${task.data.id}`, undefined, outsider.cookie)).status, 403);
   assert.equal((await f.request('PATCH', `/tasks/${task.data.id}`, { status: 'done' }, owner.cookie)).status, 200);
+  const commentsPath = `/tasks/${task.data.id}/comments`;
+  assert.equal((await f.request('POST', commentsPath, { body: 'Gemeinsam prüfen' }, member.cookie)).status, 201);
+  assert.equal((await f.request('GET', commentsPath, undefined, owner.cookie)).data[0].body, 'Gemeinsam prüfen');
+  assert.equal((await f.request('GET', commentsPath, undefined, outsider.cookie)).status, 403);
   assert.equal((await f.request('DELETE', `/groups/${group.data.id}/members/${member.data.id}`, {}, owner.cookie)).status, 204);
   assert.equal((await f.request('GET', `/tasks/${task.data.id}`, undefined, member.cookie)).status, 403);
   assert.equal((await f.request('PATCH', `/tasks/${task.data.id}`, { title: 'Verboten' }, member.cookie)).status, 403);
+  assert.equal((await f.request('GET', commentsPath, undefined, member.cookie)).status, 403);
+  assert.equal((await f.request('POST', commentsPath, { body: 'Verboten' }, member.cookie)).status, 403);
+  assert.equal((await f.request('DELETE', `/tasks/${task.data.id}`, {}, owner.cookie)).status, 200);
+  const db = await f.openDb();
+  try { assert.equal((await db.get('SELECT COUNT(*) AS count FROM comments WHERE taskId = ?', task.data.id)).count, 0); }
+  finally { await db.close(); }
   const privateTask = await f.request('POST', '/tasks', taskInput, member.cookie);
   assert.equal(privateTask.status, 201);
   assert.equal((await f.request('GET', `/tasks/${privateTask.data.id}`, undefined, owner.cookie)).status, 403);
@@ -30,7 +40,7 @@ test('Gemeinsame App: Anmeldung, Gruppenmitgliedschaft, Aufgabenrechte und Logou
   assert.equal((await f.request('GET', '/tasks', undefined, owner.cookie)).status, 401);
 });
 
-test('Gruppenadapter hält parallele Transaktionen auf getrennten Verbindungen', async t => {
+test('Gruppenservice hält parallele Transaktionen auf getrennten Verbindungen', async t => {
   const f = await teamFixture(); t.after(() => f.close());
   const owner = await f.login('owner@campus.example');
   const results = await Promise.all(['Eins', 'Zwei', 'Drei'].map(name => f.request('POST', '/groups', { name }, owner.cookie)));

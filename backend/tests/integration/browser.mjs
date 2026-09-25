@@ -41,19 +41,39 @@ try {
     assert.equal(new URL(page.url()).hash, '');
     assert.equal((await page.request.get('http://localhost:5175/api/auth/me')).status(), 401);
     await page.getByRole('button', { name: 'Anmeldung bestätigen', exact: true }).click();
-    await page.getByTestId('current-user').filter({ hasText: 'demo@campus.example' }).waitFor();
-    await page.getByRole('heading', { name: 'Integration prüfen', exact: true }).waitFor();
+    await page.locator('.profile-summary').filter({ hasText: 'demo@campus.example' }).waitFor();
+    await page.locator('.task-list').getByRole('heading', { name: 'Integration prüfen', exact: true }).waitFor();
     return link;
   }
   const firstLink = await login();
-  await page.getByRole('button', { name: '+ Neue Aufgabe', exact: true }).click();
-  await page.getByLabel('Titel *', { exact: true }).fill('Browserprüfung');
-  await page.getByLabel('Fällig am *', { exact: true }).fill('2026-09-25T16:00');
-  await page.getByLabel('Zuordnung', { exact: true }).selectOption({ label: 'Demo-Team' });
-  await page.getByRole('button', { name: 'Aufgabe anlegen', exact: true }).click();
-  await page.getByRole('heading', { name: 'Browserprüfung', exact: true }).waitFor();
+  // Eine gerade angelegte Gruppe muss ohne Neuladen für Aufgaben auswählbar sein.
+  await page.getByPlaceholder('Neue Gruppe', { exact: true }).fill('Browsergruppe');
+  await page.getByRole('button', { name: 'Erstellen', exact: true }).click();
+  const tasks = page.getByRole('region', { name: 'Aufgabenplanung', exact: true });
+  await tasks.locator('.task-create-form label').filter({ hasText: /^Gruppe/ }).locator('select').selectOption({ label: 'Browsergruppe' });
+  await tasks.getByPlaceholder('Titel', { exact: true }).fill('Browserprüfung');
+  await tasks.getByLabel('Fällig', { exact: true }).fill('2026-10-05T16:00');
+  await tasks.getByRole('button', { name: 'Aufgabe hinzufügen', exact: true }).click();
+  const item = tasks.locator('.task-item').filter({ hasText: 'Browserprüfung' });
+  await item.getByRole('heading', { name: 'Browserprüfung', exact: true }).waitFor();
+  const stored = async () => (await (await page.request.get('http://localhost:5175/api/tasks')).json()).data.find(task => task.title === 'Browserprüfung');
+  const beforeEdit = await stored();
+  assert.equal(beforeEdit.dueAt, '2026-10-05T14:00:00.000Z');
+  await item.getByRole('button', { name: 'Bearbeiten', exact: true }).click();
+  const editing = tasks.locator('.is-editing');
+  assert.equal(await editing.getByLabel('Fällig', { exact: true }).inputValue(), '2026-10-05T16:00');
+  await editing.getByPlaceholder('Beschreibung (optional)').fill('Termin bleibt gleich');
+  await editing.getByRole('button', { name: 'Speichern', exact: true }).click();
+  await item.getByText('Termin bleibt gleich', { exact: true }).waitFor();
+  assert.equal((await stored()).dueAt, beforeEdit.dueAt);
+  await item.getByRole('button', { name: 'Kommentare', exact: true }).click();
+  await item.getByLabel('Neuer Kommentar', { exact: true }).fill('Integration klappt');
+  await item.getByRole('button', { name: 'Kommentar senden', exact: true }).click();
+  await item.getByText('Integration klappt', { exact: true }).waitFor();
   await page.reload();
-  await page.getByRole('heading', { name: 'Browserprüfung', exact: true }).waitFor();
+  await item.getByRole('heading', { name: 'Browserprüfung', exact: true }).waitFor();
+  await item.getByRole('button', { name: 'Kommentare', exact: true }).click();
+  await item.getByText('Integration klappt', { exact: true }).waitFor();
   const screenshotDir = process.env.STUDYPRIO_SCREENSHOTS;
   if (screenshotDir) { await mkdir(screenshotDir, { recursive: true }); await page.screenshot({ path: path.join(screenshotDir, 'team-desktop.png'), fullPage: true }); }
   await page.setViewportSize({ width: 390, height: 844 });
@@ -63,7 +83,7 @@ try {
   assert.equal((await page.request.post('http://localhost:5175/api/auth/logout', { data: {}, headers: {
     Origin: 'http://localhost:5175', 'X-StudyPrio-Request': '1'
   } })).status(), 204);
-  await page.getByRole('button', { name: 'Aktualisieren', exact: true }).click();
+  await item.locator('.task-actions select').selectOption('done');
   await page.getByRole('alert').filter({ hasText: 'Sitzung ist abgelaufen' }).waitFor();
   await login();
   await page.getByRole('button', { name: 'Abmelden', exact: true }).click();
@@ -73,7 +93,7 @@ try {
   await page.getByRole('button', { name: 'Anmeldung bestätigen', exact: true }).click();
   await page.getByRole('alert').filter({ hasText: 'ungültig oder abgelaufen' }).waitFor();
   assert.deepEqual(errors, []);
-  console.log('Browserprüfung bestanden: Login, explizite Bestätigung, useAuth, Gruppenliste, Aufgabe anlegen, Reload, Sitzungsende, erneuter Login, Logout, Linkwiederverwendung, Desktop/Mobil.');
+  console.log('Browserprüfung bestanden: Login, explizite Bestätigung, useAuth, Gruppe anlegen, Aufgabe zuordnen, Bearbeiten ohne Zeitverschiebung, Kommentare, Reload, Sitzungsende, erneuter Login, Logout, Linkwiederverwendung, Desktop/Mobil.');
 } finally {
   if (browser) await browser.close();
   child.kill('SIGTERM');

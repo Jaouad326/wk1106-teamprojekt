@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api.js';
-import { getGroups } from '../groups/groupsApi.js';
 import CommentSection from '../comments/CommentSection.jsx';
 import './tasks.css';
 
@@ -18,8 +17,11 @@ function toPayload(values) {
   };
 }
 function toFormValues(task) {
+  const due = new Date(task.dueAt);
+  // datetime-local erwartet Ortszeit; die API speichert UTC.
+  const localDue = new Date(due.getTime() - due.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
   return {
-    title: task.title, description: task.description, dueAt: task.dueAt.slice(0, 16),
+    title: task.title, description: task.description, dueAt: localDue,
     importance: task.importance, difficulty: task.difficulty, effortHours: task.effortHours
   };
 }
@@ -101,9 +103,8 @@ function TaskItem({ task, groups, editingId, setEditingId, openCommentsId, setOp
   </article>;
 }
 
-export default function TasksPage({ onSummaryChange }) {
+export default function TasksPage({ onSummaryChange, groups }) {
   const [tasks, setTasks] = useState([]);
-  const [groups, setGroups] = useState([]);
   const [form, setForm] = useState(emptyTask);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -111,7 +112,7 @@ export default function TasksPage({ onSummaryChange }) {
   const [openCommentsId, setOpenCommentsId] = useState(null);
 
   async function loadTasks() { try { setTasks(await api('/tasks')); } catch (requestError) { setError(requestError.message); } }
-  useEffect(() => { loadTasks(); getGroups().then(setGroups).catch(() => {}); }, []);
+  useEffect(() => { loadTasks(); }, []);
 
   useEffect(() => {
     if (!onSummaryChange) return;

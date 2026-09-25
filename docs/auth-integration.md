@@ -1,149 +1,116 @@
-# Anmeldung – Übergabe für die Besprechung am 24.09.
+# Gemeinsamer Stand – 25.09.2026
 
-## Was bereit ist
+## Welche Dateien zusammengehören
 
-Login per Einmal-Link, SQLite-Sitzung, Logout, requireAuth, Nutzerverzeichnis,
-Login-Oberfläche, API-Client und Nutzerkontext. 29 Auth-/Clienttests und zwei
-Team-Tests bestanden. Der Browserablauf mit echten Aufgaben-/Gruppenmodulen
-ist auf Desktop und Mobil geprüft. Mailtransport ist im Prüfaufbau simuliert.
+Alle Module werden aus demselben Checkout gestartet. Keine alten Branches oder
+Dateien darüberkopieren. Basis dieser Korrektur ist main, Commit a362c80.
 
-## Stand der Teamteile im geprüften Aufbau
+| Bereich | Dateien / Anschluss |
+|---|---|
+| Login-Oberfläche | frontend/src/features/auth/AuthGate.jsx und auth.css |
+| Dashboard | frontend/src/features/dashboard/DashboardPage.jsx und dashboard.css |
+| Aufgaben | frontend/src/features/tasks/TasksPage.jsx; backend/src/modules/tasks |
+| Gruppen | frontend/src/features/groups; backend/src/modules/groups |
+| Kommentare | frontend/src/features/comments; backend/src/modules/comments |
+| Gemeinsamer API-Client | frontend/src/api.js |
+| Zusammensetzung | frontend/src/App.jsx und backend/src/app.js |
 
-| Teil | Verwendeter Stand | Anschluss |
-|---|---|---|
-| Anmeldung / Jaouad | aktueller Auth-Arbeitsstand vom 24.09. | createApp, requireAuth, userDirectory, AuthGate, useAuth |
-| Aufgaben / Amin | work/amin-tasks, a552cdb | createTaskModule und TasksWorkspace geprüft |
-| Gruppen / Haizam | work/haizam-groups, 8e226e8 | Gruppen-API und AccessService geprüft; neue Gruppenoberfläche braucht API-Anschluss |
-| Kommentare / Ahshan | main, 7b45b5d | Schema vorhanden; Router/UI noch anzuschließen |
-| Priorisierung / Bassim | beim Abruf noch kein veröffentlichter Branch vorhanden | später taskService aus features verwenden |
+Bassim kann die Login-Oberfläche in AuthGate.jsx und auth.css gestalten.
+Die Loginlogik bleibt mit dem Backend verbunden: Link anfordern, ausdrücklich
+bestätigen, Sitzung laden, abmelden. Es ist kein eigener zweiter Login nötig.
+Das Dashboard wird nach erfolgreicher Anmeldung außerhalb des Loginlayouts angezeigt.
 
-Die Tests vereinigen die Module lokal. main und die Arbeitsbranches der anderen
-werden dabei nicht verändert. Der normale npm-run-dev-Start zeigt noch die
-Auth-Willkommensansicht. Die folgende Demo zeigt bereits Aufgaben und Gruppen.
+createApp registriert Gruppen-, Aufgaben- und Kommentarrouten bereits selbst.
+Diese Routen nicht nochmals mit mountFeatures einhängen. Der Hook ist nur für
+zusätzliche Routen vorgesehen. Alle geschützten Module verwenden requireAuth
+und dieselbe SQLite-Datenbank. Kommentare prüfen den Zugriff über taskService.
+Gruppenmitglieder müssen sich einmal anmelden, bevor der Gruppenbesitzer ihre
+bestätigte E-Mail-Adresse hinzufügen kann.
 
-## In der Besprechung starten
+Frontendaufrufe über api('/tasks', ...) verwenden. Die Funktion setzt JSON und
+X-StudyPrio-Request, liefert data und behandelt abgelaufene Sitzungen gemeinsam.
+Keinen fremden Backendhost und keine eigenen CORS-Ausnahmen einbauen.
 
-Voraussetzung: Node.js wie in INSTALL.md und npm ci in Root, Backend, Frontend.
+## Warum eine UI-Änderung online fehlen kann
+
+GitHub, der Checkout auf dem Server und die ausgelieferten Webdateien sind drei
+verschiedene Stände. Ein Push allein baut die Website nicht neu. Zu prüfen sind:
+
+1. Ist die Änderung im Branch, den die VM tatsächlich verwendet?
+2. Läuft der Dienst aus genau diesem Projektordner?
+3. Wurde frontend/dist nach dem Update neu gebaut?
+4. Liefert der Webserver dieses dist aus oder noch einen anderen Ordner/Devserver?
+5. Stimmen Website-Adresse und APP_ORIGIN überein?
+
+Die aktuelle VM-Konfiguration nach den Änderungen mit Copilot ist noch nicht
+bekannt. Deshalb werden hier weder ein Dienstname noch ein Serverpfad behauptet.
+Vor Änderungen .env und Datenbank sichern; keine reset --hard-/clean-Befehle und
+keine Datenbanklöschung verwenden, um einen abweichenden Checkout zu bereinigen.
+
+## Gemeinsamer Serverbetrieb
+
+Die App unterstützt optional eine einzige Backendadresse für UI und API:
+
+- Im Projektordner die Abhängigkeiten von Backend und Frontend mit npm ci installieren.
+- Im Projektordner npm run build ausführen.
+- In backend/.env SERVE_FRONTEND=true setzen; für öffentlichen Betrieb außerdem
+  NODE_ENV=production, MAIL_MODE=smtp, APP_ORIGIN=https://die-tatsaechliche-adresse
+  und vollständige SMTP-Konfiguration. APP_ORIGIN enthält keinen Pfad.
+- Bei Betrieb hinter einem lokalen HTTPS-Proxy HOST=127.0.0.1 verwenden.
+- npm start im Projektordner startet das Backend samt gebauter Oberfläche.
+- Der vorhandene Dienst muss diesen Prozess dauerhaft betreiben. Der HTTPS-Proxy
+  leitet in dieser Variante alle Pfade an 127.0.0.1:3000 weiter.
+
+Das ist eine unterstützte Konfiguration, keine bereits ausgeführte VM-Änderung.
+Ein bestehender separater statischer Webserver kann ebenfalls funktionieren;
+dort müssen Buildpfad, /auth/verify und /api korrekt zugeordnet sein.
+
+Bei späteren Updates: gemeinsame Änderungen integrieren, richtigen Commit auf
+der VM beziehen, Abhängigkeiten bei Bedarf installieren, neuen Build erstellen,
+Datenbank vor nötigen Migrationen sichern und den Backenddienst neu starten.
+Den tatsächlichen Dienstnamen und Projektpfad vorher ermitteln.
+
+## Prüfergebnis vom 25.09.2026
+
+45 Backendtests, zwei gemeinsame HTTP-Integrationstests und der Vite-Build
+bestanden. Der Browserablauf lief mit Chromium 131 und Zeitzone Europe/Berlin
+auf Desktop und Mobil durch: Login, Gruppenanlage, Aufgabenzuordnung,
+Terminbearbeitung ohne Verschiebung, Kommentare, Reload, Sitzungsende, erneuter
+Login, Logout und Ablehnung eines bereits verwendeten Links. Dies ist eine
+lokale Prüfung mit simulierter Mailzustellung, keine Abnahme der Azure-Website.
+
+## Prüfen ohne produktive Daten
+
+Im Projektordner:
 
 ```sh
-git fetch origin
+npm --prefix backend test
 npm run test:team
+npm run build
 npm run demo:team
 ```
 
-http://localhost:5175 öffnen. Adresse: demo@campus.example.
-„Anmeldelink anfordern“ drücken, den URL-Wert aus TEST_LOGIN_LINK im Terminal
-öffnen und bestätigen. Eine Demo-Gruppe und Aufgabe sind vorbereitet.
-Neue Aufgabe anlegen, Seite neu laden und abmelden. Strg+C beendet den Aufbau.
-Die Daten sind erfunden und temporär; keine echten E-Mails, keine dauerhaften
-Gruppen-/Aufgabendaten. Die separate Gruppenoberfläche gehört nicht zu dieser Demo.
+Die Demo unter http://localhost:5175 verwendet das echte App.jsx mit allen
+aktuellen Modulen. demo@campus.example eingeben und den Link aus TEST_LOGIN_LINK
+im Terminal öffnen. Keine echten Mails; neue temporäre Datenbank je Start.
+Strg+C beendet die Demo und entfernt nur deren Daten.
 
-Der Runner erstellt temporäre detached Worktrees der oben genannten Commits,
-verwendet die installierten Abhängigkeiten und entfernt die Worktrees beim Beenden.
-Bei Änderungen der Team-Branches müssen die Prüfstände im Runner bewusst aktualisiert
-und erneut getestet werden. Keine Änderungen an fremden Arbeitsdateien übernehmen,
-ohne deren aktuellen Stand abzugleichen.
+Der gemeinsame HTTP-Test prüft auch: Außenstehende können Gruppenaufgaben und
+Kommentare nicht lesen; entfernte Mitglieder verlieren diese Rechte; beim
+Löschen einer Aufgabe werden ihre Kommentare entfernt.
 
-## Montage in der gemeinsamen App
+Optionale Browserprüfung mit separat installiertem Playwright und Chromium:
 
-Nach Zusammenführung der Module: Migrationen in der Reihenfolge Auth → Gruppen →
-Aufgaben → Kommentare. Dieselbe SQLite-Datei verwenden, Fremdschlüssel aktivieren.
-PRAGMA foreign_key_check muss anschließend leer sein. Alte verwaiste Daten
-gemeinsam prüfen; keine automatische Löschung.
-
-createApp nimmt den synchronen Callback mountFeatures entgegen. Darin werden
-Routen vor dem 404-Handler montiert. Die Vorlage steht lauffähig in
-backend/tests/integration/teamFixture.mjs. Auszug:
-
-```js
-mountFeatures(app, { openDb, requireAuth, userDirectory }) {
-  // groupService und accessService zuvor mit echten Verbindungen aufbauen.
-  const { taskRouter, taskService } = createTaskModule({
-    openDb, requireAuth, accessService
-  });
-  app.use('/api/groups', createGroupRouter(groupService, requireAuth));
-  app.use('/api/tasks', taskRouter);
-  return { taskService, groupService };
-}
+```sh
+node backend/tests/integration/run.mjs --browser
 ```
 
-taskService ist dann über runtime.features.taskService verfügbar. Neue Routen
-nicht erst nach Rückgabe der App-Fabrik anhängen: Dort ist der 404-Handler schon
-registriert. Gruppen-Schreibvorgänge brauchen eigene Verbindungen je Aufruf;
-ein gemeinsam verwendeter Handle kann parallele Transaktionen vermischen.
-Der geprüfte Adapter in teamFixture.mjs öffnet/schließt je Gruppenaufruf eine
-Verbindung. Der AccessService verwendet eine eigene reine Leseverbindung.
-Dauerhafte Handles beim Serverende schließen.
+PLAYWRIGHT_MODULE kann auf die Playwright-Moduldatei zeigen, STUDYPRIO_CHROMIUM
+auf eine Browserdatei. Geprüft werden der Login, neue Gruppen ohne Neuladen,
+Aufgaben, Bearbeiten ohne Zeitverschiebung, Kommentare, Reload und Logout.
+Der Mailtransport im Test ist simuliert. Die öffentliche Website muss zusätzlich
+mit tatsächlicher Mailzustellung und zwei Teamkonten geprüft werden.
 
-Frontend nach Zusammenführung:
-
-```jsx
-<AuthGate><TasksWorkspace api={api} /></AuthGate>
-```
-
-Weitere Ansichten erhalten über useAuth() das Objekt { user, logout }.
-user enthält id, email, emailVerifiedAt und createdAt. API-Aufrufe erfolgen
-über api('/tasks', { method: 'POST', body: ... }); die Funktion liefert data.
-Fehler enthalten status, code und gegebenenfalls fields für die Formularfelder.
-Bei 401 aus geschützten Modulen blendet AuthGate die Ansicht aus und zeigt den Login.
-Dies ersetzt keine serverseitige Prüfung: Alle geschützten Routen nutzen requireAuth.
-
-## Noch gemeinsam zu erledigen
-
-- SMTP-Konfiguration auf jedem benötigten Rechner lokal einrichten. Jaouads
-  Gmail-Versand an sein THM-Postfach ist einschließlich Login/Logout geprüft.
-  mnd.thm.de ist belegt; weitere Empfängerdomains bei Bedarf ergänzen. Mailkonto ist der Absender,
-  die Hochschuladresse ist der Empfänger; es werden keine Uni-Passwörter abgefragt.
-- Für SMTP neue DATABASE_PATH und Migration verwenden. Lokale Testkonten dürfen
-  nicht übernommen werden; der Server blockiert den Moduswechsel auf derselben DB.
-- npm run mail:check prüft Verbindung/Anmeldung ohne Versand. Danach tatsächliche
-  Zustellung eines selbst angeforderten Links prüfen.
-- Ahshans Kommentare: Task über taskService laden, Rechte mit await und Taskobjekt
-  prüfen; Frontend-POST über api() senden. Kommentare sind bis dahin gesperrt.
-- Haizams übrige Fehlerfälle und Gruppenoberfläche prüfen. Sein aktueller Router
-  gibt bei unbekannten Fehlern interne error.message zurück; das vor Freigabe ändern.
-- Seine Gruppenoberfläche verwendet derzeit direkt fetch ohne Auth-Header. Die
-  gemeinsame api()-Funktion wie unten anbinden, sonst scheitern Schreibvorgänge mit 403.
-- Bassims Priorisierung/Dashboard anschließen, finalen Build und Gesamtablauf prüfen.
-- Gemeinsame Spec/Architektur vervollständigen und Review durch alle. Kein bestandener
-  Gesamtabnahmetest und kein Produktionsbetrieb wird hier behauptet.
-
-## Konkreter Anschluss der neuen Gruppenoberfläche
-
-Nach Zusammenführung kann frontend/src/features/groups/groupsApi.js seine
-bestehenden Funktionsnamen behalten und den gemeinsamen Client verwenden:
-
-```js
-import { api } from '../../api.js';
-
-const groupPath = id => `/groups/${encodeURIComponent(id)}`;
-export const getGroups = () => api('/groups');
-export const createGroup = name => api('/groups', { method: 'POST', body: { name } });
-export const getGroup = id => api(groupPath(id));
-export const getGroupMembers = id => api(`${groupPath(id)}/members`);
-export const addGroupMember = (id, email) => api(`${groupPath(id)}/members`, {
-  method: 'POST', body: { email }
-});
-export const removeGroupMember = (id, userId) => api(
-  `${groupPath(id)}/members/${encodeURIComponent(userId)}`, { method: 'DELETE' }
-);
-```
-
-Damit kommen Schreibschutz-Header, JSON-Body, Cookie-Verhalten und 401-Behandlung
-aus einer Stelle. Dies ist die vorbereitete Änderung für Haizams Oberfläche;
-sie ist kein bereits durchgeführter Merge seines Arbeitsbranches.
-
-Eigener Abschluss, SMTP-Prüfung und Code-Erklärung: [auth-abschluss.md](auth-abschluss.md).
-
-## Browserprüfung wiederholen (optional)
-
-Mit separat installiertem Playwright samt Chromium:
-node backend/tests/integration/run.mjs --browser.
-PLAYWRIGHT_MODULE kann auf die Playwright-Moduldatei zeigen, STUDYPRIO_CHROMIUM auf
-eine vorhandene Browserdatei. Browsertools sind keine Produktivabhängigkeiten.
-Geprüft am 24.09. mit Chromium 131: explizite Linkbestätigung, Nutzerkontext,
-Gruppenliste, Neuanlage, Reload, Sitzungsende, erneuter Login, Logout und ungültiger
-Link. Screenshots wurden auf Desktop 1280×950 und Mobil 390×844 kontrolliert.
-
-KI-Unterstützung: ChatGPT/Codex für Anschlusskorrekturen, Prüfhilfen und Dokumentation.
-Jaouads persönliche Codeprüfung und Erklärung sowie die gemeinsame Abnahme stehen aus.
+KI-Unterstützung: ChatGPT/Codex für Integrationskorrekturen, Tests und diese
+Dokumentation. Persönlicher Code-Walkthrough und gemeinsame Abnahme durch das
+Team bleiben erforderlich. Automatische Tests ersetzen diese Abnahme nicht.

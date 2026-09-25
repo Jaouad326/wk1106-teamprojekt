@@ -17,10 +17,9 @@ try {
   await fixture.request('POST', `/groups/${group.data.id}/members`, { email: demo.data.email }, owner.cookie);
   await fixture.request('POST', '/tasks', { title: 'Integration prüfen', dueAt: '2026-09-25T15:00:00Z', importance: 3, difficulty: 2, effortHours: 1, groupId: group.data.id }, demo.cookie);
   vite = await createServer({ configFile: false, root: path.join(root, 'frontend/tests/integration'), plugins: [react()],
-    resolve: { dedupe: ['react', 'react-dom'], alias: {
-      '@team-tasks': path.join(process.env.TEAM_TASKS_ROOT, 'frontend/src/features/tasks')
-    } }, server: { host: '127.0.0.1', port: 5175, strictPort: true,
-      fs: { allow: [root, process.env.TEAM_TASKS_ROOT] }, proxy: { '/api': fixture.origin } }
+    resolve: { dedupe: ['react', 'react-dom'] },
+    server: { host: '127.0.0.1', port: 5175, strictPort: true,
+      fs: { allow: [root] }, proxy: { '/api': fixture.origin } }
   });
   await vite.listen(); live = true;
   console.log('TEAM_PREVIEW_URL=http://localhost:5175');

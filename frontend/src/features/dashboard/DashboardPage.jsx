@@ -5,6 +5,7 @@ import GroupsPage from '../groups/GroupsPage.jsx';
 import TasksPage from '../tasks/TasksPage.jsx';
 import './dashboard.css';
 
+const EMPTY_GROUPS = [];
 const PRIORITY_DOTS = { 'Sehr hoch': '🔴', 'Hoch': '🟠', 'Mittel': '🟡', 'Niedrig': '⚪' };
 const STATUS_ACTIVITY_LABELS = { open: 'angelegt', in_progress: 'in Arbeit', done: 'erledigt' };
 
@@ -232,7 +233,7 @@ export default function DashboardPage() {
 
         <section className="dashboard-next"><div><p className="dashboard-eyebrow">ARBEITSBEREICH</p><h2>Alles an einem Ort.</h2></div></section>
         <section id="groups"><GroupsPage onGroupsChange={handleGroups} /></section>
-        <section id="tasks"><TasksPage onSummaryChange={handleTaskSummary} /></section>
+        <section id="tasks"><TasksPage onSummaryChange={handleTaskSummary} groups={groups ?? EMPTY_GROUPS} /></section>
       </div>
     </main>
   );

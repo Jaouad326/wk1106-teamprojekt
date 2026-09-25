@@ -1,9 +1,8 @@
 # StudyPrio lokal starten
 
-Stand: 24.09.2026, Auth-Beitrag für die gemeinsame Basis auf main.
-Jaouad hat den Login mit echter Gmail-Zustellung an sein THM-Postfach auf Windows
-erfolgreich geprüft. Die Aufgaben-/Gruppen-Demo ist unten beschrieben;
-die endgültige Zusammenführung der übrigen Teamteile steht noch aus.
+Stand: 25.09.2026. Anmeldung, Dashboard, Aufgaben, Gruppen und Kommentare
+sind in derselben App verbunden. Jaouad hat am 24.09. den echten Mailversand
+auf Windows geprüft. Die aktuelle öffentliche VM muss gesondert geprüft werden.
 
 ## Voraussetzungen
 
@@ -78,8 +77,20 @@ Es gibt keinen stillen Wechsel von SMTP auf Testlinks.
 Bei öffentlichem Betrieb: NODE_ENV=production, APP_ORIGIN als HTTPS-Origin,
 HTTPS-Reverse-Proxy für Frontend und /api auf derselben Origin; HOST passend zum
 Proxy setzen. Dieser Betrieb ist noch nicht abgenommen.
-npm run build im Frontend erstellt nur die Webdateien; das Express-Backend
-muss zusätzlich laufen. vite preview ist keine fertige Produktivbereitstellung.
+Im Projektordner `npm run build` ausführen. Mit `SERVE_FRONTEND=true` in
+backend/.env liefert `npm start` sowohl den Build als auch die API über das Backend.
+Ein HTTPS-Reverse-Proxy kann dadurch alle Anfragen an 127.0.0.1:3000 weiterleiten.
+Der Backendprozess muss als Dienst dauerhaft laufen. `APP_ORIGIN` muss genau die
+öffentliche HTTPS-Adresse enthalten (ohne Pfad); Login und API verwenden dieselbe Adresse.
+Eine bestehende Caddy-/Dienst-Konfiguration vor Änderungen prüfen.
+Details: [docs/auth-integration.md](docs/auth-integration.md).
+
+Ein GitHub-Push aktualisiert eine VM ohne Deployment-Automatik nicht. Nach einer
+UI-Änderung muss der Server den richtigen Commit beziehen und den Frontend-Build
+neu erstellen. Bei Backendänderungen zusätzlich den laufenden Dienst neu starten.
+Vor Migrationen eine konsistente Sicherung der bestehenden SQLite-Datenbank anlegen.
+.env und DATABASE_PATH erhalten; nicht bei jedem Update eine neue Datenbank anlegen.
+`vite preview` ist keine fertige Produktivbereitstellung.
 
 ## Prüfen
 
@@ -111,8 +122,8 @@ Cookies bleiben bei Aufrufen über den Vite-Proxy auf derselben Origin.
 
 ## Bekannte offene Punkte
 
-Finale Montage der übrigen Module sowie Kommentarrechte sind noch offen.
-Aufgaben-/Gruppenanschluss ist im separaten Prüfaufbau getestet.
+Der gemeinsame HTTP-Test prüft Anmeldung, Gruppen, Aufgaben und Kommentarrechte.
+Die Prüfung der tatsächlich veröffentlichten VM steht noch aus.
 Bei 429 etwas warten: drei Mailanforderungen pro Adresse/15 Minuten,
 30 Anforderungen bzw. Bestätigungsversuche pro IP/15 Minuten.
 Ein anderer Browser-Origin führt bei schreibenden Aufrufen zu 403.
@@ -123,15 +134,15 @@ Bei Startfehler: .env und Migration prüfen; bei Mailfehler: SMTP-Konfiguration.
 Nach Installation der Abhängigkeiten im Root:
 
 ```sh
-git fetch origin
 npm run test:team
 npm run demo:team
 ```
 
 http://localhost:5175 öffnen, demo@campus.example eingeben und den Link aus
-TEST_LOGIN_LINK im Terminal öffnen. Danach erscheinen Amins Aufgabenansicht und
-die Gruppenliste. Der Prüfaufbau verwendet die festgehaltenen Team-Commits in
-temporären Worktrees und eine neue Testdatenbank. Strg+C räumt beides auf.
+TEST_LOGIN_LINK im Terminal öffnen. Danach erscheint das aktuelle Dashboard mit
+Aufgaben, Gruppen und Kommentaren. Der Prüfaufbau verwendet alle Module aus
+demselben Checkout und eine neue temporäre Datenbank. Strg+C beendet die Demo
+und entfernt deren Datenbank. Die normale Datenbank bleibt unverändert.
 Es erfolgen kein Merge und keine GitHub-Schreiboperation. Details und Grenzen:
 [docs/auth-integration.md](docs/auth-integration.md).
 
