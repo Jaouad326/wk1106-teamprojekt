@@ -12,6 +12,7 @@ import GroupsPage from '../groups/GroupsPage.jsx';
 import TasksPage from '../tasks/TasksPage.jsx';
 import './dashboard.css';
 
+const EMPTY_GROUPS = [];
 const PRIORITY_CLASSES = {
   'Sehr hoch': 'priority-sehr-hoch',
   Hoch: 'priority-hoch',
