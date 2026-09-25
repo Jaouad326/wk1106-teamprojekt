@@ -8,7 +8,37 @@
 .dashboard-account { display: grid; gap: 12px; margin-top: auto; color: #718078; font-size: .75rem; overflow-wrap: anywhere; }
 .dashboard-account button { width: fit-content; padding: 8px 11px; color: #2c5345; background: transparent; border: 1px solid #afc1b8; border-radius: 7px; cursor: pointer; font-size: .76rem; font-weight: 650; }
 .dashboard-account button:hover { color: #fff; background: #2c5345; }
+.profile-summary { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.profile-summary > span:last-child { display: grid; gap: 3px; min-width: 0; }
+.profile-summary strong { overflow: hidden; color: #52635b; font-size: .78rem; text-overflow: ellipsis; white-space: nowrap; }
+.profile-summary small { overflow: hidden; color: #8a9891; font-size: .68rem; text-overflow: ellipsis; white-space: nowrap; }
+.profile-avatar { position: relative; display: grid; width: 38px; height: 38px; flex: 0 0 38px; place-items: center; background: #dcebe2; border: 1px solid #afc8b8; border-radius: 50%; }
+.profile-avatar::before { content: ''; position: absolute; top: 8px; width: 9px; height: 9px; background: #2c5345; border-radius: 50%; }
+.profile-avatar::after { content: ''; position: absolute; bottom: 7px; width: 19px; height: 10px; background: #2c5345; border-radius: 12px 12px 7px 7px; }
+.profile-avatar span { position: absolute; z-index: 1; top: 19px; width: 2px; height: 8px; background: #dcebe2; }
 .dashboard-content { min-width: 0; max-width: 1120px; width: 100%; padding: 62px clamp(30px, 6vw, 92px) 80px; }
+.dashboard-topbar { position: relative; display: flex; justify-content: flex-end; min-height: 38px; margin-bottom: 24px; }
+.dashboard-topnav { display: flex; align-items: center; gap: 7px; }
+.dashboard-topnav a, .dashboard-topnav button { padding: 9px 12px; color: #60736a; background: transparent; border: 1px solid transparent; border-radius: 8px; cursor: pointer; font: inherit; font-size: .82rem; text-decoration: none; }
+.dashboard-topnav a:hover, .dashboard-topnav a.is-active, .dashboard-topnav button:hover, .dashboard-topnav button[aria-expanded="true"] { color: #2c5345; background: #e8efec; border-color: #d5e1db; }
+.settings-panel { position: absolute; z-index: 5; top: 46px; right: 0; width: min(100%, 350px); padding: 20px; background: #fff; border: 1px solid #d5e1db; border-radius: 12px; box-shadow: 0 18px 42px rgba(32, 53, 45, .14); }
+.settings-heading { display: flex; align-items: flex-start; justify-content: space-between; }
+.settings-heading h2 { margin: 0; color: #202a35; font-family: Georgia, serif; font-size: 1.25rem; font-weight: 400; }
+.settings-close { padding: 0 5px; color: #60736a; background: transparent; border: 0; cursor: pointer; font-size: 1.4rem; line-height: 1; }
+.settings-option { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 15px 0 0; margin-top: 16px; border-top: 1px solid #e1eae4; cursor: pointer; }
+.settings-option span { display: grid; gap: 4px; }
+.settings-option strong { color: #202a35; font-size: .84rem; }
+.settings-option small { color: #8a9891; font-size: .75rem; line-height: 1.4; }
+.settings-option input { width: 18px; height: 18px; accent-color: #2c5345; }
+.profile-panel { position: absolute; z-index: 5; top: 46px; right: 0; width: min(100%, 350px); padding: 20px; background: #fff; border: 1px solid #d5e1db; border-radius: 12px; box-shadow: 0 18px 42px rgba(32, 53, 45, .14); }
+.profile-form { display: grid; gap: 8px; margin-top: 16px; }
+.profile-form label { color: #52635b; font-size: .76rem; font-weight: 700; }
+.profile-form input { padding: 10px 11px; color: #202a35; background: #fbfcfb; border: 1px solid #ccd8d1; border-radius: 8px; font: inherit; }
+.profile-form input:focus { border-color: #2c5345; outline: 3px solid rgba(44, 83, 69, .12); }
+.profile-form p { margin: 0; color: #8a9891; font-size: .75rem; }
+.profile-form button { margin-top: 6px; padding: 10px 13px; color: #fff; background: #2c5345; border: 0; border-radius: 8px; cursor: pointer; font-weight: 700; }
+.profile-form button:disabled { opacity: .55; cursor: wait; }
+.profile-error { margin: 14px 0 0; padding: 9px 11px; color: #984139; background: #fff0ee; border-radius: 7px; font-size: .78rem; }
 .dashboard-welcome { margin-bottom: 42px; }
 .dashboard-eyebrow { margin: 0 0 14px; color: #668276; font-size: .68rem; font-weight: 800; letter-spacing: .17em; }
 .dashboard-welcome h1 { margin: 0; color: #202a35; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.5rem, 5vw, 4.7rem); font-weight: 400; letter-spacing: -.06em; line-height: .98; }
@@ -52,4 +82,33 @@
 .activity-text strong { color: #202a35; }
 .activity-time { flex-shrink: 0; color: #9aa6a0; font-size: .74rem; }
 
+.dashboard-page.is-dark { color: #f2f2f2; background: #000; }
+.dashboard-page.is-dark .dashboard-sidebar { background: #050505; border-color: #252525; }
+.dashboard-page.is-dark .dashboard-brand, .dashboard-page.is-dark .dashboard-welcome h1, .dashboard-page.is-dark .dashboard-next h2, .dashboard-page.is-dark .tasks-heading h2, .dashboard-page.is-dark .groups-heading h2 { color: #f5f5f5; }
+.dashboard-page.is-dark .dashboard-nav a, .dashboard-page.is-dark .dashboard-account, .dashboard-page.is-dark .dashboard-topnav a, .dashboard-page.is-dark .dashboard-topnav button { color: #b5b5b5; }
+.dashboard-page.is-dark .dashboard-nav a:hover, .dashboard-page.is-dark .dashboard-nav a.is-active, .dashboard-page.is-dark .dashboard-topnav a:hover, .dashboard-page.is-dark .dashboard-topnav a.is-active, .dashboard-page.is-dark .dashboard-topnav button:hover, .dashboard-page.is-dark .dashboard-topnav button[aria-expanded="true"] { color: #fff; background: #202020; border-color: #3b3b3b; }
+.dashboard-page.is-dark .dashboard-welcome > p:last-child, .dashboard-page.is-dark .dashboard-overview-row p, .dashboard-page.is-dark .dashboard-progress-detail, .dashboard-page.is-dark .dashboard-empty, .dashboard-page.is-dark .task-meta, .dashboard-page.is-dark .tasks-empty { color: #a6a6a6; }
+.dashboard-page.is-dark .dashboard-overview-row, .dashboard-page.is-dark .dashboard-progress, .dashboard-page.is-dark .dashboard-group-progress, .dashboard-page.is-dark .dashboard-activity, .dashboard-page.is-dark .dashboard-highlight-list li, .dashboard-page.is-dark .tasks-panel, .dashboard-page.is-dark .groups-panel { background: #111; border-color: #2b2b2b; box-shadow: 0 10px 28px rgba(255, 255, 255, .03); }
+.dashboard-page.is-dark .dashboard-overview-row > span, .dashboard-page.is-dark .group-progress-heading, .dashboard-page.is-dark .activity-text, .dashboard-page.is-dark .task-description, .dashboard-page.is-dark .task-field-row label { color: #c0c0c0; }
+.dashboard-page.is-dark .dashboard-overview-row strong, .dashboard-page.is-dark .dashboard-highlight-title, .dashboard-page.is-dark .activity-text strong, .dashboard-page.is-dark .task-item h3 { color: #f0f0f0; }
+.dashboard-page.is-dark .dashboard-chip, .dashboard-page.is-dark .groups-count, .dashboard-page.is-dark .tasks-heading > span { color: #f0f0f0; background: #242424; }
+.dashboard-page.is-dark .dashboard-highlight-due, .dashboard-page.is-dark .activity-time { color: #b8b8b8; }
+.dashboard-page.is-dark .task-create-form, .dashboard-page.is-dark .group-item, .dashboard-page.is-dark .group-details, .dashboard-page.is-dark .task-item { background: #0b0b0b; border-color: #2b2b2b; }
+.dashboard-page.is-dark .task-create-form input, .dashboard-page.is-dark .task-create-form select, .dashboard-page.is-dark .task-create-form textarea, .dashboard-page.is-dark .task-actions select, .dashboard-page.is-dark .group-create input, .dashboard-page.is-dark .group-details input, .dashboard-page.is-dark .comment-form textarea { color: #f5f5f5; background: #000; border-color: #555; }
+.dashboard-page.is-dark .task-actions button, .dashboard-page.is-dark .dashboard-account button, .dashboard-page.is-dark .group-details li button { color: #ddd; border-color: #555; }
+.dashboard-page.is-dark .settings-panel { background: #111; border-color: #444; }
+.dashboard-page.is-dark .settings-heading h2, .dashboard-page.is-dark .settings-option strong { color: #f5f5f5; }
+.dashboard-page.is-dark .settings-option { border-color: #333; }
+.dashboard-page.is-dark .settings-close, .dashboard-page.is-dark .settings-option small { color: #b5b5b5; }
+.dashboard-page.is-dark .profile-summary strong { color: #ddd; }
+.dashboard-page.is-dark .profile-summary small { color: #999; }
+.dashboard-page.is-dark .profile-avatar { background: #2a2a2a; border-color: #555; }
+.dashboard-page.is-dark .profile-avatar::before, .dashboard-page.is-dark .profile-avatar::after { background: #eee; }
+.dashboard-page.is-dark .profile-avatar span { background: #2a2a2a; }
+.dashboard-page.is-dark .profile-panel { background: #111; border-color: #444; }
+.dashboard-page.is-dark .profile-form label { color: #ccc; }
+.dashboard-page.is-dark .profile-form input { color: #f5f5f5; background: #000; border-color: #555; }
+.dashboard-page.is-dark .profile-form p { color: #999; }
+
 @media (max-width: 760px) { .dashboard-page { display: block; } .dashboard-sidebar { position: static; min-height: auto; padding: 20px; border-right: 0; border-bottom: 1px solid #d5e1db; } .dashboard-nav { display: flex; gap: 4px; margin-top: 24px; } .dashboard-nav a { flex: 1; } .dashboard-account { display: flex; align-items: center; justify-content: space-between; margin-top: 24px; } .dashboard-content { padding: 40px 20px 60px; } }
+@media (max-width: 520px) { .dashboard-topbar { justify-content: stretch; } .dashboard-topnav { width: 100%; } .dashboard-topnav a, .dashboard-topnav button { flex: 1; padding-inline: 6px; font-size: .76rem; } .settings-panel { left: 0; right: 0; width: auto; } }

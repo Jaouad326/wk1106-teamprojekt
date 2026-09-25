@@ -19,7 +19,7 @@ export default function GroupsPage({ onGroupsChange }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    getGroups().then(setGroups).catch(setError).finally(() => setLoading(false));
+    getGroups().then(setGroups).catch(requestError => setError(requestError.message)).finally(() => setLoading(false));
   }, []);
 
   useEffect(() => { onGroupsChange?.(groups); }, [groups, onGroupsChange]);

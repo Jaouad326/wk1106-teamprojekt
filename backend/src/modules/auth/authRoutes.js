@@ -65,6 +65,13 @@ export function createAuthRouter({ service, repository, sessions, localMail, now
     res.json({ data: user });
   }));
   router.get('/me', createRequireAuth(sessions), (req, res) => res.json({ data: req.user }));
+  router.patch('/profile', createRequireAuth(sessions), asyncRoute(async (req, res) => {
+    const displayName = typeof req.body?.displayName === 'string' ? req.body.displayName.trim() : '';
+    if (displayName.length > 80) {
+      return res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Der Name darf höchstens 80 Zeichen lang sein.' } });
+    }
+    res.json({ data: await repository.updateProfile(req.user.id, displayName) });
+  }));
   router.post('/logout', asyncRoute(async (req, res) => {
     await sessions.logout(req, res);
     res.status(204).end();

@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { api } from '../../api.js';
 import { useAuth } from '../auth/AuthContext.js';
 import GroupsPage from '../groups/GroupsPage.jsx';
 import TasksPage from '../tasks/TasksPage.jsx';
@@ -34,11 +35,35 @@ export default function DashboardPage() {
   const { user, logout } = useAuth();
   const [taskSummary, setTaskSummary] = useState(null);
   const [groups, setGroups] = useState(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [profileName, setProfileName] = useState(user.displayName || '');
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileError, setProfileError] = useState('');
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('studyprio:dark-mode') === 'true');
   const handleTaskSummary = useCallback(summary => setTaskSummary(summary), []);
   const handleGroups = useCallback(list => setGroups(list), []);
   const groupCount = groups === null ? null : groups.length;
   const progressPercent = taskSummary && taskSummary.total > 0
     ? Math.round((taskSummary.done / taskSummary.total) * 100) : 0;
+
+  useEffect(() => {
+    localStorage.setItem('studyprio:dark-mode', String(darkMode));
+  }, [darkMode]);
+
+  async function saveProfile(event) {
+    event.preventDefault();
+    if (profileSaving) return;
+    setProfileSaving(true); setProfileError('');
+    try {
+      const updatedUser = await api('/auth/profile', { method: 'PATCH', body: { displayName: profileName } });
+      setProfileName(updatedUser.displayName || '');
+      setProfileOpen(false);
+    } catch (error) { setProfileError(error.message); }
+    finally { setProfileSaving(false); }
+  }
+
+  const visibleName = profileName || user.email.split('@')[0];
 
   const overviewItems = [
     {
@@ -66,7 +91,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <main className="dashboard-page">
+    <main className={`dashboard-page${darkMode ? ' is-dark' : ''}`}>
       <aside className="dashboard-sidebar">
         <div className="dashboard-brand"><span className="brand-mark" aria-hidden="true">S</span><span>StudyPrio</span></div>
         <nav className="dashboard-nav" aria-label="Bereiche">
@@ -74,10 +99,52 @@ export default function DashboardPage() {
           <a href="#tasks">Aufgaben</a>
           <a href="#groups">Gruppen</a>
         </nav>
-        <div className="dashboard-account"><span>{user.email}</span><button type="button" onClick={logout}>Abmelden</button></div>
+        <div className="dashboard-account">
+          <div className="profile-summary">
+            <span className="profile-avatar" aria-hidden="true"><span /></span>
+            <span><strong>{visibleName}</strong><small>{user.email}</small></span>
+          </div>
+          <button type="button" onClick={logout}>Abmelden</button>
+        </div>
       </aside>
 
       <div className="dashboard-content">
+        <header className="dashboard-topbar">
+          <nav className="dashboard-topnav" aria-label="Hauptnavigation">
+            <a className="is-active" href="#overview">Home</a>
+            <button type="button" aria-expanded={settingsOpen} onClick={() => setSettingsOpen(open => !open)}>Einstellungen</button>
+            <button type="button" aria-expanded={profileOpen} onClick={() => { setProfileOpen(open => !open); setSettingsOpen(false); }}>Profil bearbeiten</button>
+            <button type="button" onClick={logout}>Logout</button>
+          </nav>
+          {settingsOpen && (
+            <section className="settings-panel" aria-label="Einstellungen">
+              <div className="settings-heading">
+                <div><p className="dashboard-eyebrow">DARSTELLUNG</p><h2>Einstellungen</h2></div>
+                <button className="settings-close" type="button" onClick={() => setSettingsOpen(false)} aria-label="Einstellungen schließen">×</button>
+              </div>
+              <label className="settings-option">
+                <span><strong>Dark Mode</strong><small>Schwarzer Hintergrund für konzentriertes Arbeiten.</small></span>
+                <input type="checkbox" checked={darkMode} onChange={event => setDarkMode(event.target.checked)} />
+              </label>
+            </section>
+          )}
+          {profileOpen && (
+            <section className="profile-panel" aria-label="Profil bearbeiten">
+              <div className="settings-heading">
+                <div><p className="dashboard-eyebrow">MEIN PROFIL</p><h2>Profil bearbeiten</h2></div>
+                <button className="settings-close" type="button" onClick={() => setProfileOpen(false)} aria-label="Profil schließen">×</button>
+              </div>
+              {profileError && <p className="profile-error" role="alert">{profileError}</p>}
+              <form className="profile-form" onSubmit={saveProfile}>
+                <label htmlFor="profile-name">Anzeigename</label>
+                <input id="profile-name" value={profileName} maxLength={80} onChange={event => setProfileName(event.target.value)} placeholder="Dein Name" />
+                <p>{user.email}</p>
+                <button type="submit" disabled={profileSaving}>{profileSaving ? 'Wird gespeichert ...' : 'Profil speichern'}</button>
+              </form>
+            </section>
+          )}
+        </header>
+
         <section className="dashboard-welcome" id="overview">
           <p className="dashboard-eyebrow">ÜBERSICHT</p>
           <h1>Dein Arbeitsbereich</h1>

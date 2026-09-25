@@ -67,7 +67,7 @@ export function createAuthRepository({ openDb }) {
             [randomUUID(), token.email, verifiedAt, verifiedAt]
           );
           const user = await db.get(
-            'SELECT id, email, emailVerifiedAt, createdAt FROM users WHERE email = ?',
+            'SELECT id, email, displayName, emailVerifiedAt, createdAt FROM users WHERE email = ?',
             [token.email]
           );
           // Link und Sitzung gehören in dieselbe Transaktion.
@@ -91,7 +91,7 @@ export function createAuthRepository({ openDb }) {
 
     findSession(tokenHash, at) {
       return withDb(async db => (await db.get(
-        `SELECT u.id, u.email, u.emailVerifiedAt, u.createdAt FROM auth_sessions s
+        `SELECT u.id, u.email, u.displayName, u.emailVerifiedAt, u.createdAt FROM auth_sessions s
          JOIN users u ON u.id = s.userId WHERE s.tokenHash = ? AND s.expiresAt > ?`,
         [tokenHash, at]
       )) ?? null);
@@ -121,9 +121,19 @@ export function createAuthRepository({ openDb }) {
 
     findVerifiedByEmail(email) {
       return withDb(async db => (await db.get(
-        'SELECT id, email, emailVerifiedAt, createdAt FROM users WHERE email = ?',
+        'SELECT id, email, displayName, emailVerifiedAt, createdAt FROM users WHERE email = ?',
         [email]
       )) ?? null);
+    },
+
+    updateProfile(userId, displayName) {
+      return withDb(async db => {
+        await db.run('UPDATE users SET displayName = ? WHERE id = ?', [displayName, userId]);
+        return db.get(
+          'SELECT id, email, displayName, emailVerifiedAt, createdAt FROM users WHERE id = ?',
+          [userId]
+        );
+      });
     }
   };
 }

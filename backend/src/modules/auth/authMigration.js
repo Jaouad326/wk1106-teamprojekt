@@ -4,6 +4,7 @@ export async function up(db) {
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       email TEXT NOT NULL UNIQUE,
+      displayName TEXT NOT NULL DEFAULT '',
       emailVerifiedAt TEXT NOT NULL,
       createdAt TEXT NOT NULL
     );
@@ -33,4 +34,8 @@ export async function up(db) {
       mailMode TEXT NOT NULL CHECK (mailMode IN ('local', 'smtp'))
     );
   `);
+  const columns = await db.all('PRAGMA table_info(users)');
+  if (!columns.some(column => column.name === 'displayName')) {
+    await db.exec("ALTER TABLE users ADD COLUMN displayName TEXT NOT NULL DEFAULT ''");
+  }
 }

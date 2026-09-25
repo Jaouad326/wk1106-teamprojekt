@@ -98,8 +98,22 @@ test('HTTP: secure cookie flags and only hash in SQLite', async t => {
     const row = await db.get('SELECT * FROM auth_sessions');
     assert.match(row.tokenHash, /^[a-f0-9]{64}$/);
     assert.ok(!JSON.stringify(row).includes(cookie.split(';')[0].split('=')[1]));
-    assert.deepEqual(Object.keys(response.data.data).sort(), ['createdAt', 'email', 'emailVerifiedAt', 'id']);
+    assert.deepEqual(Object.keys(response.data.data).sort(), ['createdAt', 'displayName', 'email', 'emailVerifiedAt', 'id']);
   } finally { await db.close(); }
+});
+
+test('HTTP: authenticated user can update and read their display name', async t => {
+  const f = await fixture(t);
+  const cookie = await f.login();
+  const update = await f.request('/api/auth/profile', {
+    method: 'PATCH', body: { displayName: 'Bassim Hassan' }, cookie
+  });
+  assert.equal(update.status, 200);
+  assert.equal(update.data.data.displayName, 'Bassim Hassan');
+  assert.equal((await f.request('/api/auth/me', { cookie })).data.data.displayName, 'Bassim Hassan');
+  assert.equal((await f.request('/api/auth/profile', {
+    method: 'PATCH', body: { displayName: 'x'.repeat(81) }, cookie
+  })).status, 400);
 });
 
 test('HTTP: new login rotates session; expired and forged sessions are denied', async t => {
