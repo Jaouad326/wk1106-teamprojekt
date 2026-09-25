@@ -111,6 +111,90 @@
 .dashboard-page.is-dark .profile-form label { color: #ccc; }
 .dashboard-page.is-dark .profile-form input { color: #f5f5f5; background: #000; border-color: #555; }
 .dashboard-page.is-dark .profile-form p { color: #999; }
+.dashboard-page.is-dark .invitation-panel {
+  background: #111;
+  border-color: #444;
+}
+
+.dashboard-page.is-dark .invitation-item {
+  border-color: #333;
+}
+
+.dashboard-page.is-dark .invitation-item strong {
+  color: #f5f5f5;
+}
+
+.dashboard-page.is-dark .invitation-item p {
+  color: #aaa;
+}
 
 @media (max-width: 760px) { .dashboard-page { display: block; } .dashboard-sidebar { position: static; min-height: auto; padding: 20px; border-right: 0; border-bottom: 1px solid #d5e1db; } .dashboard-nav { display: flex; gap: 4px; margin-top: 24px; } .dashboard-nav a { flex: 1; } .dashboard-account { display: flex; align-items: center; justify-content: space-between; margin-top: 24px; } .dashboard-content { padding: 40px 20px 60px; } }
 @media (max-width: 520px) { .dashboard-topbar { justify-content: stretch; } .dashboard-topnav { width: 100%; } .dashboard-topnav a, .dashboard-topnav button { flex: 1; padding-inline: 6px; font-size: .76rem; } .settings-panel { left: 0; right: 0; width: auto; } }
+.invitation-notifications {
+  position: relative;
+}
+
+.notification-button {
+  position: relative;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0.45rem;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -0.2rem;
+  right: -0.2rem;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  line-height: 1.1rem;
+  text-align: center;
+  background: #d33;
+  color: white;
+}
+
+.invitation-panel {
+  position: absolute;
+  top: calc(100% + 0.75rem);
+  right: 0;
+  z-index: 20;
+  width: min(24rem, 90vw);
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 0.75rem;
+  background: white;
+  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.15);
+}
+
+.invitation-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.invitation-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.invitation-item:last-child {
+  border-bottom: 0;
+}
+
+.invitation-item p {
+  margin: 0.35rem 0 0.75rem;
+}
+
+.invitation-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.invitation-actions button {
+  cursor: pointer;
+}

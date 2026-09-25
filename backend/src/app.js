@@ -10,6 +10,7 @@ import { createGroupService } from './modules/groups/groupService.js';
 import { createAccessService } from './access/accessService.js';
 import { createTaskModule } from './modules/tasks/taskModule.js';
 import { createCommentRouter } from './modules/comments/commentRoutes.js';
+import { createGroupInvitationService } from './modules/groups/groupInvitationService.js';
 
 export function createApp({ openDb, config, mailer, now = () => new Date(), mountFeatures = () => ({}), frontendDirectory }) {
   const repository = createAuthRepository({ openDb });
@@ -32,8 +33,14 @@ export function createApp({ openDb, config, mailer, now = () => new Date(), moun
   }));
   app.use('/api/auth', createAuthRouter({ service, repository, sessions, now, localMail: config.mailMode === 'local' }));
   const userDirectory = { findVerifiedByEmail: service.findVerifiedByEmail };
-  const groupService = createGroupService({ openDb, userDirectory });
-  app.use('/api/groups', createGroupRouter({ groupService, requireAuth }));
+const groupService = createGroupService({ openDb, userDirectory });
+const invitationService = createGroupInvitationService({ openDb, userDirectory });
+
+app.use('/api/groups', createGroupRouter({
+  groupService,
+  requireAuth,
+  invitationService
+}));
   const taskModule = createTaskModule({ openDb, requireAuth, accessService: createAccessService({ openDb }) });
   app.use('/api/tasks', taskModule.taskRouter);
   app.use('/api/tasks/:taskId/comments', createCommentRouter({ openDb, requireAuth, taskService: taskModule.taskService }));

@@ -11,3 +11,20 @@ export const removeGroupMember = (groupId, userId) => api(`/groups/${groupId}/me
   method: 'DELETE',
   body: {}
 });
+export const getGroupInvitations = () => api('/groups/invitations');
+
+export const acceptGroupInvitation = invitationId => api(
+  `/groups/invitations/${invitationId}/accept`,
+  {
+    method: 'POST',
+    body: {}
+  }
+);
+
+export const declineGroupInvitation = invitationId => api(
+  `/groups/invitations/${invitationId}/decline`,
+  {
+    method: 'POST',
+    body: {}
+  }
+);
