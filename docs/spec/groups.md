@@ -81,7 +81,7 @@ Eine offene Einladung erzeugt noch keine Gruppenmitgliedschaft.
 
 **Akteur:** eingeladener Benutzer
 
-Ein eingeladener Benutzer kann seine Einladungen anzeigen.
+Ein eingeladener Benutzer sieht seine offenen Einladungen unter der Glocke im Dashboard.
 
 Für jede Einladung werden unter anderem Gruppe, Einladungsstatus und
 Erstellungszeitpunkt angezeigt.
@@ -149,7 +149,10 @@ Beim Verlassen:
 - verliert der Benutzer den Zugriff auf die Gruppenaufgaben dieser Gruppe,
 - wird die Gruppe anschließend nicht mehr in seinen eigenen Gruppen angezeigt.
 
-Der Gruppen-Owner kann die Gruppe nicht über diesen Anwendungsfall verlassen.
+Auch die Gruppenleitung kann nach Bestätigung austreten. Sind andere Mitglieder
+vorhanden, muss sie eines davon als Nachfolger wählen. Ist sie allein, wird die
+Gruppe aufgelöst: Gruppenaufgaben werden zu persönlichen Aufgaben des letzten
+Mitglieds; ihre Kommentare bleiben erhalten. Offene Einladungen verfallen.
 
 ## Daten
 
@@ -209,7 +212,7 @@ Der Owner darf:
 - Gruppenmitglieder anzeigen,
 - Mitglieder entfernen.
 
-Der Owner darf sich nicht selbst aus der Gruppe entfernen.
+Direktes Entfernen der Gruppenleitung bleibt verboten. Für den Austritt gilt UC-G10.
 
 ### Gruppenmitglied
 
@@ -270,7 +273,7 @@ Typische Fehlerfälle sind:
 - Einladung existiert nicht.
 - Einladung gehört nicht zum angemeldeten Benutzer.
 - Einladung wurde bereits beantwortet.
-- Owner versucht, die Gruppe zu verlassen.
+- Gruppenleitung wählt beim Verlassen keinen gültigen Nachfolger.
 - Benutzer versucht, eine Gruppe zu verlassen, in der er kein Mitglied ist.
 
 ## Abgrenzung
@@ -282,3 +285,14 @@ Die eigentliche Aufgabenverwaltung bleibt im Aufgabenmodul.
 
 Die Benutzerkonten und deren Bestätigungsstatus werden vom Authentifizierungs-
 modul bereitgestellt und nicht erneut im Gruppenmodul angelegt.
+## Oberfläche und Zustimmung (25.09.2026)
+
+Das Formular „Einladen“ erstellt ausschließlich eine offene Einladung. Der alte
+POST-Endpunkt /api/groups/:groupId/members erstellt ebenfalls nur eine Einladung.
+Es gibt über die HTTP-API kein erzwungenes Hinzufügen. Einladungen erscheinen in
+der App, nicht als zusätzliche E-Mail; der Empfänger braucht ein bestätigtes Konto.
+Nach Annahme werden Gruppen und Aufgaben ohne Seitenneuladen aktualisiert.
+Bereits bestehende Mitgliedschaften werden durch dieses Update nicht verändert.
+
+KI-Unterstützung: ChatGPT/Codex für UI-Anschluss, Austrittsregeln und Tests.
+Geprüft mit isolierter Datenbank und Browserkonten; keine echten Einladungsmails.

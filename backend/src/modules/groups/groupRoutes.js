@@ -79,7 +79,7 @@ router.post('/invitations/:invitationId/decline', requireAuth, async (req, res) 
 
   router.post('/:groupId/members', requireAuth, async (req, res) => {
     try {
-      res.status(201).json({ data: await groupService.addMember(req.user.id, req.params.groupId, req.body?.email) });
+      res.status(201).json({ data: await invitationService.createInvitation(req.user.id, req.params.groupId, req.body?.email) });
     } catch (error) { sendError(res, error); }
   });
 
@@ -94,7 +94,8 @@ router.post('/invitations/:invitationId/decline', requireAuth, async (req, res) 
     res.json({
       data: await groupService.leaveGroup(
         req.user.id,
-        req.params.groupId
+        req.params.groupId,
+        req.body?.successorId
       )
     });
   } catch (error) {

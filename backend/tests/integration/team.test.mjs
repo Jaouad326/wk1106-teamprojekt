@@ -14,7 +14,9 @@ test('Gemeinsame App: Anmeldung, Gruppenmitgliedschaft, Aufgabenrechte und Logou
   assert.equal(group.status, 201);
   // Keine bestätigte Adresse im Verzeichnis: verständlicher 404 statt Gruppen-500.
   assert.equal((await f.request('POST', `/groups/${group.data.id}/members`, { email: 'x@not-allowed.example' }, owner.cookie)).status, 404);
-  assert.equal((await f.request('POST', `/groups/${group.data.id}/members`, { email: member.data.email }, owner.cookie)).status, 201);
+  const invitation = await f.request('POST', `/groups/${group.data.id}/invitations`, { email: member.data.email }, owner.cookie);
+  assert.equal(invitation.status, 201);
+  assert.equal((await f.request('POST', `/groups/invitations/${invitation.data.id}/accept`, {}, member.cookie)).status, 200);
   const task = await f.request('POST', '/tasks', { ...taskInput, groupId: group.data.id }, member.cookie);
   assert.equal(task.status, 201);
   assert.equal((await f.request('GET', `/tasks/${task.data.id}`, undefined, outsider.cookie)).status, 403);

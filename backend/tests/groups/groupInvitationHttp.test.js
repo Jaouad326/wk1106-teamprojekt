@@ -287,7 +287,7 @@ test('HTTP: pending invitation does not grant group membership', async t => {
 
   assert.equal(members.status, 403);
 });
-test('HTTP: member can leave group, but owner cannot', async t => {
+test('HTTP: member can leave; last owner can dissolve group', async t => {
   const f = await fixture(t);
 
   f.sessions.set(f.owner, f.owner);
@@ -356,6 +356,6 @@ test('HTTP: member can leave group, but owner cannot', async t => {
     }
   );
 
-  assert.equal(ownerLeave.status, 400);
-  assert.equal(ownerLeave.data.error.code, 'BAD_REQUEST');
+  assert.equal(ownerLeave.status, 200);
+  assert.equal(ownerLeave.data.data.dissolved, true);
 });

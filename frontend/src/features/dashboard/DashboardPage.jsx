@@ -7,6 +7,7 @@ import {
 } from '../groups/groupsApi.js';
 import { useAuth } from '../auth/AuthContext.js';
 import { ChevronLeft, ChevronRight, ClipboardCheck, LayoutGrid, LogOut, Users } from 'lucide-react';
+import ConfirmDialog from '../../components/ConfirmDialog.jsx';
 import FocusMode from './FocusMode.jsx';
 import GroupsPage from '../groups/GroupsPage.jsx';
 import TasksPage from '../tasks/TasksPage.jsx';
@@ -46,6 +47,19 @@ function formatRelativeTime(isoString) {
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const [logoutBusy, setLogoutBusy] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
+  const [groupRevision, setGroupRevision] = useState(0);
+  const refreshMembership = useCallback(() => setGroupRevision(value => value + 1), []);
+  async function confirmLogout() {
+    if (logoutBusy) return;
+    setLogoutBusy(true); setLogoutError('');
+    try {
+      if (await logout() === false) setLogoutError('Abmelden fehlgeschlagen. Bitte erneut versuchen.');
+    } catch (error) { setLogoutError(error.message); }
+    finally { setLogoutBusy(false); }
+  }
   const [taskSummary, setTaskSummary] = useState(null);
   const [groups, setGroups] = useState(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -72,13 +86,16 @@ const [invitationBusy, setInvitationBusy] = useState(false);
   try {
     setInvitationError('');
     const data = await getGroupInvitations();
-    setInvitations(data);
+    setInvitations(data.filter(invitation => invitation.status === 'pending'));
   } catch (error) {
     setInvitations([]);
-    setInvitationError('Keine Benachrichtigungen vorhanden.');
+    setInvitationError('Einladungen konnten nicht geladen werden. Bitte erneut öffnen.');
   }
-}useEffect(() => {
+}
+useEffect(() => {
   loadInvitations();
+  const timer = window.setInterval(loadInvitations, 30000);
+  return () => window.clearInterval(timer);
 }, []);
 async function respondToInvitation(invitationId, action) {
   if (invitationBusy) return;
@@ -89,6 +106,7 @@ async function respondToInvitation(invitationId, action) {
   try {
     if (action === 'accept') {
       await acceptGroupInvitation(invitationId);
+      refreshMembership();
     } else {
       await declineGroupInvitation(invitationId);
     }
@@ -163,7 +181,7 @@ async function respondToInvitation(invitationId, action) {
             <span className="profile-avatar" aria-hidden="true"><span /></span>
             <span className="dashboard-sidebar-label"><strong>{visibleName}</strong><small>{user.email}</small></span>
           </div>
-          <button type="button" onClick={logout}><LogOut aria-hidden="true" /><span className="dashboard-sidebar-label">Abmelden</span></button>
+          <button type="button" onClick={() => { setLogoutError(''); setLogoutOpen(true); }}><LogOut aria-hidden="true" /><span className="dashboard-sidebar-label">Abmelden</span></button>
         </div>
       </aside>
 
@@ -176,7 +194,7 @@ async function respondToInvitation(invitationId, action) {
     className="notification-button"
     aria-label="Gruppeneinladungen"
     aria-expanded={invitationsOpen}
-    onClick={() => setInvitationsOpen(open => !open)}
+    onClick={() => { setInvitationsOpen(open => !open); loadInvitations(); }}
   >
     🔔
     {invitations.length > 0 && (
@@ -204,6 +222,7 @@ async function respondToInvitation(invitationId, action) {
         </button>
       </div>
 
+      {invitationError && <p role="alert" className="groups-error">{invitationError}</p>}
       {invitations.length === 0 ? (
         <p className="dashboard-empty">
           {invitationError || 'Keine Benachrichtigungen vorhanden.'}
@@ -220,7 +239,7 @@ async function respondToInvitation(invitationId, action) {
               <div className="invitation-actions">
                 <button
                   type="button"
-                  disabled={invitationBusy}
+                  className="ui-button" disabled={invitationBusy}
                   onClick={() =>
                     respondToInvitation(invitation.id, 'accept')
                   }
@@ -230,7 +249,7 @@ async function respondToInvitation(invitationId, action) {
 
                 <button
                   type="button"
-                  disabled={invitationBusy}
+                  className="ui-button ui-button-secondary" disabled={invitationBusy}
                   onClick={() =>
                     respondToInvitation(invitation.id, 'decline')
                   }
@@ -248,7 +267,7 @@ async function respondToInvitation(invitationId, action) {
             <a className="is-active" href="#overview">Home</a>
             <button type="button" aria-expanded={settingsOpen} onClick={() => setSettingsOpen(open => !open)}>Einstellungen</button>
             <button type="button" aria-expanded={profileOpen} onClick={() => { setProfileOpen(open => !open); setSettingsOpen(false); }}>Profil bearbeiten</button>
-            <button type="button" onClick={logout}>Logout</button>
+            <button type="button" onClick={() => { setLogoutError(''); setLogoutOpen(true); }}>Logout</button>
           </nav>
           {settingsOpen && (
             <section className="settings-panel" aria-label="Einstellungen">
@@ -367,9 +386,13 @@ async function respondToInvitation(invitationId, action) {
         )}
 
         <section className="dashboard-next"><div><p className="dashboard-eyebrow">ARBEITSBEREICH</p><h2>Alles an einem Ort.</h2></div></section>
-        <section id="groups"><GroupsPage onGroupsChange={handleGroups} /></section>
-        <section id="tasks"><TasksPage onSummaryChange={handleTaskSummary} groups={groups ?? EMPTY_GROUPS} /></section>
+        <section id="groups"><GroupsPage onGroupsChange={handleGroups} refreshKey={groupRevision} onMembershipChange={refreshMembership} /></section>
+        <section id="tasks"><TasksPage refreshKey={groupRevision} onSummaryChange={handleTaskSummary} groups={groups ?? EMPTY_GROUPS} /></section>
       </div>
+      {logoutOpen && <ConfirmDialog title="Wirklich abmelden?" confirmLabel="Jetzt abmelden"
+        onCancel={() => setLogoutOpen(false)} onConfirm={confirmLogout} busy={logoutBusy} error={logoutError}>
+        <p>Du beendest deine aktuelle Sitzung. Gespeicherte Aufgaben bleiben erhalten. Zum erneuten Anmelden brauchst du einen neuen E-Mail-Link.</p>
+      </ConfirmDialog>}
     </main>
   );
 }

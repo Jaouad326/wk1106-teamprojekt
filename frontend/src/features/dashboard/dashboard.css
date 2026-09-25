@@ -235,3 +235,30 @@ html { scroll-behavior: smooth; }
 .invitation-actions button {
   cursor: pointer;
 }
+/* Gemeinsame Auswahlfelder und Aktionen */
+.dashboard-page select { appearance: none; padding-right: 34px !important; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23768d80' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important; background-repeat: no-repeat !important; background-position: right 11px center !important; border-radius: 10px; cursor: pointer; }
+.focus-settings-toggle { margin-top: 16px; width: 100%; max-width: 360px; justify-content: flex-start; }
+.focus-settings-toggle span { margin-left: auto; font-size: .72rem; opacity: .8; white-space: nowrap; }
+.focus-settings { max-width: 360px; padding: 16px; margin-top: 12px; background: #f7faf8; border: 1px solid #dce6df; border-radius: 12px; }
+.focus-presets { display: flex; gap: 8px; margin-bottom: 16px; }
+.focus-presets button { flex: 1; padding: 8px; border-radius: 20px; border: 1px solid #ccd8d1; background: #fff; color: #52635b; font: inherit; font-size: .78rem; cursor: pointer; }
+.focus-presets button[aria-pressed="true"] { background: #2c5345; color: #fff; border-color: #2c5345; }
+.focus-duration-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.focus-duration-fields label { display: grid; gap: 7px; color: #52635b; font-size: .75rem; font-weight: 650; }
+.focus-duration-fields input { box-sizing: border-box; width: 100%; min-width: 0; padding: 10px; border: 1px solid #ccd8d1; border-radius: 9px; color: #202a35; background: #fff; font: inherit; font-size: 1rem; }
+.focus-settings > p { color: #718078; font-size: .72rem; line-height: 1.5; }
+.focus-settings > button { width: 100%; }
+.focus-clock { width: 220px; height: 220px; max-width: 100%; display: grid; place-items: center; padding: 6px; border-radius: 50%; background: conic-gradient(#2c5345 var(--focus-progress), #dce8df 0); margin-bottom: 12px; }
+.focus-clock > div { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; width: 100%; height: 100%; border-radius: 50%; background: #f7faf8; }
+.focus-mode-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 10px; }
+.invitation-panel { right: auto; left: 0; box-sizing: border-box; width: min(340px, calc(100vw - 40px)); border-color: #d5e1db; border-radius: 14px; }
+.dashboard-topnav .invitation-actions .ui-button { color: #fff; background: #2c5345; border-color: #2c5345; }
+.dashboard-topnav .invitation-actions .ui-button-secondary { color: #52635b; background: #f7faf8; border-color: #ccd8d1; }
+.dashboard-page.is-dark .focus-settings { background: #181e1b; border-color: #405148; }
+.dashboard-page.is-dark .focus-duration-fields label { color: #b8c9c0; }
+.dashboard-page.is-dark .focus-duration-fields input, .dashboard-page.is-dark .focus-presets button { background: #222d27; color: #e1ece5; border-color: #51675b; }
+.dashboard-page.is-dark .focus-presets button[aria-pressed="true"] { background: #365e48; }
+.dashboard-page.is-dark .focus-clock { background: conic-gradient(#88b99a var(--focus-progress), #304036 0); }
+.dashboard-page.is-dark .focus-clock > div { background: #181818; }
+.dashboard-page.is-dark .invitation-panel { background: #181e1b; color: #e1ece5; border-color: #405148; }
+@media (max-width: 480px) { .focus-mode { padding: 20px 16px; gap: 20px; } .focus-mode-timer { padding: 14px 4px; } .focus-mode-actions { flex-wrap: wrap; justify-content: center; } }

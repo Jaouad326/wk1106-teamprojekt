@@ -20,7 +20,7 @@ export function createGroupService({ openDb, userDirectory }) {
   return {
     createGroup(userId, name) {
       return withDb(async db => {
-        const trimmedName = name?.trim();
+        const trimmedName = typeof name === 'string' ? name.trim() : '';
         if (!trimmedName || trimmedName.length > 80) {
           fail('BAD_REQUEST', 'Der Gruppenname muss zwischen 1 und 80 Zeichen lang sein.');
         }
@@ -120,37 +120,36 @@ export function createGroupService({ openDb, userDirectory }) {
       });
     },
 
-    leaveGroup(userId, groupId) {
+    leaveGroup(userId, groupId, successorId) {
       return withDb(async db => {
-        const group = await db.get(
-          'SELECT * FROM groups WHERE id = ?',
-          [groupId]
-        );
-
-        if (!group) {
-          fail('NOT_FOUND', 'Gruppe nicht gefunden.');
-        }
-
-        if (group.ownerId === userId) {
-          fail(
-            'BAD_REQUEST',
-            'Der Gruppenbesitzer kann die Gruppe nicht verlassen.'
-          );
-        }
-
-        const result = await db.run(
-          'DELETE FROM group_members WHERE groupId = ? AND userId = ?',
-          [groupId, userId]
-        );
-
-        if (result.changes === 0) {
-          fail(
-            'FORBIDDEN',
-            'Du bist kein Mitglied dieser Gruppe.'
-          );
-        }
-
-        return { groupId };
+        await db.exec('BEGIN IMMEDIATE');
+        try {
+          const group = await db.get('SELECT * FROM groups WHERE id = ?', [groupId]);
+          if (!group) fail('NOT_FOUND', 'Gruppe nicht gefunden.');
+          const membership = await db.get('SELECT 1 FROM group_members WHERE groupId = ? AND userId = ?', [groupId, userId]);
+          if (!membership) fail('FORBIDDEN', 'Du bist kein Mitglied dieser Gruppe.');
+          let dissolved = false;
+          if (group.ownerId === userId) {
+            const others = await db.all('SELECT userId FROM group_members WHERE groupId = ? AND userId != ?', [groupId, userId]);
+            if (others.length) {
+              if (!others.some(member => member.userId === successorId)) {
+                fail('BAD_REQUEST', 'Bitte wähle ein aktuelles Mitglied als neue Gruppenleitung.');
+              }
+              await db.run('UPDATE groups SET ownerId = ?, updatedAt = ? WHERE id = ?', [successorId, new Date().toISOString(), groupId]);
+            } else {
+              // Keine Aufgaben oder Kommentare löschen: Das letzte Mitglied behält sie persönlich.
+              const hasTasks = await db.get("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'tasks'");
+              if (hasTasks) await db.run('UPDATE tasks SET groupId = NULL, ownerId = ?, updatedAt = ? WHERE groupId = ?', [userId, new Date().toISOString(), groupId]);
+              await db.run('DELETE FROM group_invitations WHERE groupId = ?', [groupId]);
+              await db.run('DELETE FROM group_members WHERE groupId = ?', [groupId]);
+              await db.run('DELETE FROM groups WHERE id = ?', [groupId]);
+              dissolved = true;
+            }
+          }
+          if (!dissolved) await db.run('DELETE FROM group_members WHERE groupId = ? AND userId = ?', [groupId, userId]);
+          await db.exec('COMMIT');
+          return { groupId, dissolved };
+        } catch (error) { await db.exec('ROLLBACK'); throw error; }
       });
     }
   };

@@ -69,7 +69,7 @@ Ein normales Gruppenmitglied kann seine eigene Mitgliedschaft über
 Dabei wird der entsprechende Eintrag aus `group_members` gelöscht.
 Die Gruppe selbst bleibt bestehen.
 
-Der Gruppenbesitzer darf die Gruppe nicht über `leaveGroup()` verlassen.
+Die Gruppenleitung kann über `leaveGroup(userId, groupId, successorId)` austreten; Nachfolge bzw. Auflösung erfolgen in einer Transaktion.
 Dies wird vom Service mit einem Fehler abgelehnt.
 
 
@@ -128,74 +128,20 @@ Einladung auf accepted setzen
 
 ### Gruppe verlassen
 
-Ein normales Gruppenmitglied kann die eigene Mitgliedschaft über den
+`DELETE /api/groups/:groupId/membership` ruft `leaveGroup` auf. Innerhalb von
+`BEGIN IMMEDIATE` werden Gruppe und aktuelle Mitgliedschaft geprüft. Ein normales
+Mitglied wird entfernt. Bei der Gruppenleitung muss `successorId` auf ein anderes
+aktuelles Mitglied zeigen. Dann werden Eigentümerwechsel und Austritt gemeinsam
+committet. Ohne weitere Mitglieder werden die Aufgaben mit `groupId = null` dem
+letzten Mitglied zugeordnet; Kommentare bleiben an ihren Aufgaben. Danach werden
+Einladungen, Mitgliedschaften und die leere Gruppe entfernt. Fehler rollen die
+Transaktion zurück.
 
-Group Service beenden.
+Auch Erstellen und Ablehnen einer Einladung werden gegen konkurrierende
+Schreibzugriffe serialisiert. Die Annahme schreibt Mitgliedschaft und Antwortstatus
+in derselben Transaktion. Beide POST-Wege (`invitations` und der bisherige
+`members`-Endpunkt) verwenden den Einladungsservice.
 
-Der Ablauf ist:
-
-
-
-Benutzer
-
-   |
-
-   v
-
-DELETE /api/groups/:groupId/membership
-
-   |
-
-   v
-
-groupRoutes.js
-
-   |
-
-   v
-
-groupService.leaveGroup()
-
-   |
-
-   v
-
-Mitgliedschaft prüfen
-
-   |
-
-   +-- Gruppe vorhanden?
-
-   |
-
-   +-- Benutzer ist Owner?
-
-   |
-
-   +-- Benutzer ist Mitglied?
-
-   |
-
-   v
-
-DELETE aus group_members
-
-   |
-
-   v
-
-Zugriff auf Gruppenaufgaben erlischt
-
-
-
-Die Gruppe selbst wird dabei nicht gelöscht.
-
-Nur der Eintrag des Benutzers in group_members wird entfernt.
-
-Der Owner darf die Gruppe nicht verlassen. Ein entsprechender Versuch wird
-
-vom Group Service abgelehnt.
-
-Die Zugriffsprüfung verwendet weiterhin group_members als maßgebliche
-
-Quelle für die aktuelle Mitgliedschaft.
+Die UI verwendet `ConfirmDialog` zum Austritt. `DashboardPage` aktualisiert nach
+Annahme/Austritt über `groupRevision` sowohl `GroupsPage` als auch `TasksPage`.
+Die Gruppenliste für die Aufgabenauswahl kommt aus dem Dashboard.

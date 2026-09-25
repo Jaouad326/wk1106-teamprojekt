@@ -87,6 +87,7 @@ try {
   await page.getByRole('alert').filter({ hasText: 'Sitzung ist abgelaufen' }).waitFor();
   await login();
   await page.getByRole('button', { name: 'Abmelden', exact: true }).click();
+  await page.getByRole('button', { name: 'Jetzt abmelden', exact: true }).click();
   await page.getByLabel('Hochschul-E-Mail', { exact: true }).waitFor();
   assert.equal((await page.request.get('http://localhost:5175/api/tasks')).status(), 401);
   await page.goto(firstLink);

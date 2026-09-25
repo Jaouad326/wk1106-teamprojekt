@@ -112,7 +112,7 @@ konfigurierten Absender; Empfänger bleiben die erlaubten Hochschuladressen.
 - Falscher Origin, fehlender eigener Header oder falscher Inhaltstyp verhindern schreibende Anfragen.
 - Mailausfälle geben keine SMTP-Zugangsdaten aus und erzeugen keine gültige Anmeldung.
 - Ungültige Zertifikate und SMTP ohne TLS werden abgewiesen.
-- Neuladen und Backend-Neustart erhalten eine gültige Sitzung; Logout widerruft sie sofort.
+- Neuladen und Backend-Neustart erhalten eine gültige Sitzung; ein bestätigter Logout widerruft sie sofort.
 - Secrets und Sitzungstoken werden nicht im LocalStorage oder öffentlichen Repository gespeichert.
 
 Konkrete Prüffälle und der Stand der Abnahme stehen in
@@ -152,3 +152,9 @@ einschließlich negativer Fälle geprüft. Dokumentnamen, Datenfelder und Verwei
 wurden mit dem Code abgeglichen. Keine echte Zustellung wird daraus abgeleitet.
 Jaouads manueller Funktionstest ist im Abschlussbericht festgehalten;
 persönliche Code-Erklärung und gemeinsame Teamabnahme stehen noch aus.
+
+## Logout-Bestätigung (25.09.2026)
+
+Beide Abmeldeknöpfe öffnen zunächst einen Dialog. „Abbrechen“ oder Escape behält
+die Sitzung; erst „Jetzt abmelden“ sendet POST /api/auth/logout. Bei einem Fehler
+bleibt der Dialog mit einer Meldung offen. Gespeicherte Aufgaben bleiben erhalten.

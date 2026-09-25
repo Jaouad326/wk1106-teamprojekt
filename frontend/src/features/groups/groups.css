@@ -19,3 +19,15 @@
 .group-details li { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #5d6c65; font-size: .84rem; }
 .group-details li button { padding: 4px 7px; color: #984139; background: transparent; border: 0; cursor: pointer; font-size: .75rem; }
 @media (max-width: 680px) { .groups-panel { padding: 24px 20px; } .groups-content { grid-template-columns: 1fr; } }
+.group-item > span:first-child { display: inline-flex; align-items: center; gap: 8px; overflow-wrap: anywhere; }
+.group-details-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+.group-role { padding: 4px 8px; border-radius: 20px; background: #e5eee8; color: #526c5e; font-size: .68rem; font-weight: 650; }
+.group-details li > span { min-width: 0; overflow-wrap: anywhere; }
+.group-details form button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+.group-hint { font-size: .75rem; line-height: 1.5; color: #718078; }
+.group-footer { display: flex; justify-content: flex-end; padding-top: 16px; margin-top: 20px; border-top: 1px solid #dce6df; }
+.group-leave { font-size: .78rem; }
+.groups-message { padding: 12px 14px; color: #35684e; background: #eaf5ed; border: 1px solid #c7dfcf; border-radius: 10px; font-size: .84rem; line-height: 1.5; overflow-wrap: anywhere; }
+.is-dark .group-role { color: #bfd3c6; background: #283c30; }
+.is-dark .groups-message { color: #c2ddcc; background: #223b2c; border-color: #405c49; }
+@media (max-width: 480px) { .group-details form { flex-direction: column; } .group-footer .group-leave { width: 100%; } }

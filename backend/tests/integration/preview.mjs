@@ -14,7 +14,8 @@ try {
   const owner = await fixture.login('owner@campus.example');
   const demo = await fixture.login('demo@campus.example');
   const group = await fixture.request('POST', '/groups', { name: 'Demo-Team' }, owner.cookie);
-  await fixture.request('POST', `/groups/${group.data.id}/members`, { email: demo.data.email }, owner.cookie);
+  const invitation = await fixture.request('POST', `/groups/${group.data.id}/invitations`, { email: demo.data.email }, owner.cookie);
+  await fixture.request('POST', `/groups/invitations/${invitation.data.id}/accept`, {}, demo.cookie);
   await fixture.request('POST', '/tasks', { title: 'Integration prüfen', dueAt: '2026-09-25T15:00:00Z', importance: 3, difficulty: 2, effortHours: 1, groupId: group.data.id }, demo.cookie);
   vite = await createServer({ configFile: false, root: path.join(root, 'frontend/tests/integration'), plugins: [react()],
     resolve: { dedupe: ['react', 'react-dom'] },

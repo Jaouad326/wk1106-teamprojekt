@@ -53,7 +53,7 @@ export default function AuthGate({ children }) {
   async function run(action) {
     if (busy) return;
     setBusy(true); setError(''); setMessage('');
-    try { await action(); } catch (err) { setError(err.message); }
+    try { await action(); return true; } catch (err) { setError(err.message); return false; }
     finally { setBusy(false); }
   }
 

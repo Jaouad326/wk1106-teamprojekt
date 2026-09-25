@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../../api.js';
-import { getGroups } from '../groups/groupsApi.js';
 import CommentSection from '../comments/CommentSection.jsx';
 import './tasks.css';
 
@@ -121,9 +120,8 @@ function TaskItem({ task, groups, editingId, setEditingId, openCommentsId, setOp
   </article>;
 }
 
-export default function TasksPage({ onSummaryChange }) {
+export default function TasksPage({ onSummaryChange, groups, refreshKey }) {
   const [tasks, setTasks] = useState([]);
-  const [groups, setGroups] = useState([]);
   const [form, setForm] = useState(emptyTask);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -131,7 +129,7 @@ export default function TasksPage({ onSummaryChange }) {
   const [openCommentsId, setOpenCommentsId] = useState(null);
 
   async function loadTasks() { try { setTasks(await api('/tasks')); } catch (requestError) { setError(requestError.message); } }
-  useEffect(() => { loadTasks(); getGroups().then(setGroups).catch(() => {}); }, []);
+  useEffect(() => { loadTasks(); }, [refreshKey]);
 
   useEffect(() => {
     if (!onSummaryChange) return;

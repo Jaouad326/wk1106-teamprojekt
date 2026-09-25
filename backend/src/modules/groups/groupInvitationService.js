@@ -1,12 +1,17 @@
 import { randomUUID } from 'node:crypto';
 
 export function createGroupInvitationService({ openDb, userDirectory }) {
-  async function withDb(operation) {
+  async function withDb(operation, write = false) {
     const db = await openDb();
 
     try {
       await db.exec('PRAGMA busy_timeout = 5000;');
-      return await operation(db);
+      if (write) await db.exec('BEGIN IMMEDIATE');
+      try {
+        const result = await operation(db);
+        if (write) await db.exec('COMMIT');
+        return result;
+      } catch (error) { if (write) await db.exec('ROLLBACK'); throw error; }
     } finally {
       await db.close();
     }
@@ -36,7 +41,7 @@ export function createGroupInvitationService({ openDb, userDirectory }) {
         );
       }
 
-      const normalizedEmail = email?.trim().toLowerCase();
+      const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
 
       if (!normalizedEmail) {
         fail('BAD_REQUEST', 'E-Mail-Adresse fehlt.');
@@ -113,7 +118,7 @@ export function createGroupInvitationService({ openDb, userDirectory }) {
         status: invitation.status,
         createdAt: invitation.createdAt
       };
-    });
+    }, true);
   }
 
   async function listInvitations(userId) {
@@ -128,7 +133,7 @@ export function createGroupInvitationService({ openDb, userDirectory }) {
          g.name AS groupName
        FROM group_invitations gi
        JOIN groups g ON g.id = gi.groupId
-       WHERE gi.invitedUserId = ?
+       WHERE gi.invitedUserId = ? AND gi.status = 'pending'
        ORDER BY gi.createdAt DESC`,
       [userId]
     ));
@@ -235,7 +240,7 @@ export function createGroupInvitationService({ openDb, userDirectory }) {
         status: 'declined',
         respondedAt
       };
-    });
+    }, true);
   }
 
   return {

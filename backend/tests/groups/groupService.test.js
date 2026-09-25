@@ -69,7 +69,7 @@ test('UC-G4/G5: non-members cannot list groups they are not part of or view memb
   assert.deepEqual(await f.service.listGroups(f.stranger), []);
   await assert.rejects(f.service.listMembers(f.stranger, group.id), error => error.code === 'FORBIDDEN');
 });
-test('UC-G10: member can leave a group, but the owner cannot', async t => {
+test('UC-G10: member can leave; last owner can dissolve the group', async t => {
   const f = await fixture(t);
   const group = await f.service.createGroup(f.owner, 'Lerngruppe');
 
@@ -92,8 +92,7 @@ test('UC-G10: member can leave a group, but the owner cannot', async t => {
     error => error.code === 'FORBIDDEN'
   );
 
-  await assert.rejects(
-    f.service.leaveGroup(f.owner, group.id),
-    error => error.code === 'BAD_REQUEST'
-  );
+  const result = await f.service.leaveGroup(f.owner, group.id);
+  assert.equal(result.dissolved, true);
+  assert.deepEqual(await f.service.listGroups(f.owner), []);
 });

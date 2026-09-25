@@ -3,7 +3,7 @@ import { api } from '../../api.js';
 export const getGroups = () => api('/groups');
 export const createGroup = name => api('/groups', { method: 'POST', body: { name } });
 export const getGroupMembers = groupId => api(`/groups/${groupId}/members`);
-export const addGroupMember = (groupId, email) => api(`/groups/${groupId}/members`, {
+export const inviteGroupMember = (groupId, email) => api(`/groups/${groupId}/invitations`, {
   method: 'POST',
   body: { email }
 });
@@ -11,11 +11,11 @@ export const removeGroupMember = (groupId, userId) => api(`/groups/${groupId}/me
   method: 'DELETE',
   body: {}
 });
-export const leaveGroup = groupId => api(
+export const leaveGroup = (groupId, successorId) => api(
   `/groups/${groupId}/membership`,
   {
     method: 'DELETE',
-    body: {}
+    body: { successorId }
   }
 );
 export const getGroupInvitations = () => api('/groups/invitations');
